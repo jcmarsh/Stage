@@ -3,8 +3,6 @@
 # We need to be able to read the robot's initial pose and that of it's target.
 # Or rather, it would be very helpful for the simplier examples.
 
-import string
-
 def search_pose(file_name, name):
     matched = False
     f = open(file_name, "r")
