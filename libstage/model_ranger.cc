@@ -172,6 +172,25 @@ void ModelRanger::Update( void )
   Model::Update();
 }
 
+// -jcm
+bool noise_init = false;
+double addNoise(double val) {
+  double scale = 0.0;
+  double sum = 0.0;
+  
+  if (!noise_init) {
+    noise_init = true;
+    srand(9874);
+  }
+
+  scale = val / 10;
+  for (int i = 0; i < 3; i++) {
+    sum += ((double) rand() / RAND_MAX);
+  }
+
+  return scale * sum + val;
+}
+
 void ModelRanger::Sensor::Update( ModelRanger* mod )
 {
   // these sizes change very rarely, so this is very cheap
@@ -199,7 +218,7 @@ void ModelRanger::Sensor::Update( ModelRanger* mod )
   for( size_t t(0); t<sample_count; t++ )
     {
       const RaytraceResult res = mod->world->Raytrace( ray); 
-      ranges[t] = res.range;
+      ranges[t] = addNoise(res.range); // just a test! -jcm
       intensities[t] = res.mod ? res.mod->vis.ranger_return : 0.0;
       bearings[t] = start_angle + ((double)t) * sample_incr;
 		

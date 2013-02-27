@@ -3,6 +3,7 @@
 # Author: James Marshall
 # Date: Feb 25 2013
 
+include "gridcar.inc"
 include "target.inc"
 include "map.inc"
 
@@ -31,5 +32,6 @@ target
 gridcar
 (
 	name "hank"
-	pose [-2 -2 0]
+	pose [-5 -6 0 45]
+	color "blue"
 )

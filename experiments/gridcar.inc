@@ -1,0 +1,78 @@
+# gridcar.inc
+# Emulates the robot from GridWorld
+# Author: James Marshall
+# Date: Feb 21 2013
+
+define gridcar_sensor sensor
+(
+	size [0.01 0.1 0.2]
+	range [0 8.0]
+	fov 5
+	samples 1
+)
+
+define gridcar_sonars ranger
+(
+	# Units are in meters from the origin, angles in degrees
+	# 8 sensors in a square config,
+	# counter-clockwise from front (right) facing
+	gridcar_sensor( pose [ .02 0 0 1 ] )
+	gridcar_sensor( pose [ .02 .02 0 45] )
+	gridcar_sensor( pose [ 0 .02 0 90] )
+	gridcar_sensor( pose [ -.02 .02 0 135] )
+	gridcar_sensor( pose [ -.02 0 0 180] )
+	gridcar_sensor( pose [ -.02 -.02 0 225] )
+	gridcar_sensor( pose [ 0 -.02 0 270] )
+	gridcar_sensor( pose [ .02 -.02 0 315] )
+)
+
+
+define gridcar position
+(
+	# Scaled to 1 unit = 4 cm
+	size [0.24 0.272 0.16]
+	# center of rotation offset
+	origin [-.04 0 0 0]
+
+	# Main body
+	block 
+	(
+		points 4
+		point[0] [0 1.6]
+		point[1] [6 1.6]
+		point[2] [6 5.2]
+		point[3] [0 5.2]
+		z [0.1 3.1]
+	)
+	
+	# Left Wheel
+	block
+	(
+		points 4
+		point[0] [2 5.2]
+		point[1] [6 5.2]
+		point[2] [6 6.8]
+		point[3] [2 6.8]
+		z [0 4]
+	)
+
+	# Right Wheel
+	block
+	(
+		points 4
+		point[0] [2 0]
+		point[1] [6 0]
+		point[2] [6 1.6]
+		point[3] [2 1.6]
+		z [0 4]
+	)
+
+	drive "diff"
+	
+	gridcar_sonars()
+
+	obstacle_return 1	# can hit things
+	laser_return 1		# seen by lasers
+	ranger_return 1		# seen by sonar
+	blob_return 1 		# seen by blobfinders	
+)

@@ -1,0 +1,28 @@
+include "map.inc"
+include "gridcar.inc"
+
+window
+(
+	size [700 700]
+	scale 41	
+)
+
+floorplan
+(
+	bitmap "bitmaps/cave.png"
+	size [15 15 1.5]
+)
+
+gridcar
+(
+	name "hank"
+	pose [-5 -6 0 45]
+	color "green"
+)
+
+gridcar
+(
+	name "frank"
+	pose [4 4 0 225]
+	color "red"
+)
