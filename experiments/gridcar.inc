@@ -14,16 +14,24 @@ define gridcar_sensor sensor
 define gridcar_sonars ranger
 (
 	# Units are in meters from the origin, angles in degrees
-	# 8 sensors in a square config,
+	# 16 sensors all at the same point (I don't think it matters)
 	# counter-clockwise from front (right) facing
-	gridcar_sensor( pose [ .02 0 0 1 ] )
-	gridcar_sensor( pose [ .02 .02 0 45] )
-	gridcar_sensor( pose [ 0 .02 0 90] )
-	gridcar_sensor( pose [ -.02 .02 0 135] )
-	gridcar_sensor( pose [ -.02 0 0 180] )
-	gridcar_sensor( pose [ -.02 -.02 0 225] )
-	gridcar_sensor( pose [ 0 -.02 0 270] )
-	gridcar_sensor( pose [ .02 -.02 0 315] )
+	gridcar_sensor( pose [ 0 0 0 0 ] )
+	gridcar_sensor( pose [ 0 0 0 22.5 ] )
+	gridcar_sensor( pose [ 0 0 0 45 ] )
+	gridcar_sensor( pose [ 0 0 0 67.5 ] )
+	gridcar_sensor( pose [ 0 0 0 90 ] )
+	gridcar_sensor( pose [ 0 0 0 112.5 ] )
+	gridcar_sensor( pose [ 0 0 0 135] )
+	gridcar_sensor( pose [ 0 0 0 157.5 ] )
+	gridcar_sensor( pose [ 0 0 0 180] )
+	gridcar_sensor( pose [ 0 0 0 202.5 ] )
+	gridcar_sensor( pose [ 0 0 0 225] )
+	gridcar_sensor( pose [ 0 0 0 247.5 ] )
+	gridcar_sensor( pose [ 0 0 0 270] )
+	gridcar_sensor( pose [ 0 0 0 292.5 ] )
+	gridcar_sensor( pose [ 0 0 0 315] )
+	gridcar_sensor( pose [ 0 0 0 337.5 ] )
 )
 
 
