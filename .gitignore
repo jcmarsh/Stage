@@ -3,5 +3,6 @@ config.h
 *.swp
 *~
 *#
+*.pyc
 .DS_Store
 docsrc/stage

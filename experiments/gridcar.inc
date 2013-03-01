@@ -75,12 +75,11 @@ define gridcar position
 		z [0 4]
 	)
 
-	drive "diff"
+	drive "omni"
 	
 	gridcar_sonars()
 
 	obstacle_return 1	# can hit things
-	laser_return 1		# seen by lasers
 	ranger_return 1		# seen by sonar
 	blob_return 1 		# seen by blobfinders	
 )
