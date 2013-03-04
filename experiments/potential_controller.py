@@ -57,9 +57,9 @@ draw = True
 while(True):
     id = client.read()
     scan_str = ""
-    for i in range (0, ran.ranges_count):
-        scan_str += ': %.3f ' % ran.ranges[i]
-    print scan_str
+#    for i in range (0, ran.ranges_count):
+#        scan_str += ': %.3f ' % ran.ranges[i]
+#    print scan_str
 
     # current location
     print "Position: %f, %f: %f" % (pos.px, pos.py, pos.pa)
@@ -82,7 +82,7 @@ while(True):
         del_x = v * math.cos(theta)
         del_y = v * math.sin(theta)
 
-    points = []
+#    points = []
     for i in range(0, ran.ranges_count):
         # figure out location of the obstacle...
         tao = (2 * math.pi * i) / ran.ranges_count
@@ -101,12 +101,16 @@ while(True):
         z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
         z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
 
-        points.append((obs_x, obs_y))
-        points.append((obs_x + z_x, obs_y + z_y))
+#        points.append((obs_x, obs_y))
+#        points.append((obs_x + z_x, obs_y + z_y))
 
-    if draw:
-        gra.clear()
-        gra.draw_multiline(points, ran.ranges_count * 2)
+#    if draw:
+#        gra.clear()
+#        gra.draw_multiline(points, ran.ranges_count * 2)
+
+
+    gra.clear()
+    gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
 
 
     pos.set_cmd_vel(del_x, del_y, 0.0, 1)
