@@ -22,9 +22,23 @@ def search_pose(file_name, name):
 def to_robot_coords(robot, target):
     return (target[0] - robot[0], target[1] - robot[1])
 
+def search_text_property(file_name, property_name):
+    f = open(file_name, "r")
+    for line in f:
+        if property_name in line:
+            print("Line: " + line)
+            args = (line.partition('"')[2]).partition('"')[0]
+            return args
+
+# Test code
 target = search_pose("find_target.world", "target0")
 robot = search_pose("find_target.world", "hank")
+drive_type_0 = search_text_property("gridcar.inc", "drive")
+#drive_type_1 = search_text_property("diff_gridcar.inc", "drive")
 print("DONE!")
 print("Point 1:", robot[0], robot[1])
 print("Point 2:", target[0], target[1])
 print("Relative: ", to_robot_coords(robot, target))
+print("-------------------")
+print("gridcar.inc drive type:", drive_type_0)
+#print("diff_gridcar.inc drive type:", drive_type_1)
