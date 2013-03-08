@@ -42,17 +42,22 @@ print "Robot size: (%.3f,%.3f)" % (pos.size[0], pos.size[1])
 robot_loc = search_pose("find_target.world", "hank")
 target_loc = search_pose("find_target.world", "target0")
 target_loc_rel = to_robot_coords(robot_loc, target_loc)
+drive_type = search_text_property("gridcar.inc", "drive")
 g_x = target_loc_rel[0]
 g_y = target_loc_rel[1]
 g_r = .1 # radius of goal, in meters
 g_e = 2 # extent of field (greater than this, move at maximum speed)
-g_s = .2 # scale factor
+g_s = .5 # scale factor
 o_r = .0 # radius of obstacles
-o_e = 2
-o_s = .1
+o_e = 1.5
+o_s = .2
 
 print 'Relative to Hank, the target is at: %.2f %.2f' % (target_loc_rel[0], target_loc_rel[1])
 draw = True
+
+old_del_x = 0
+old_del_y = 0
+speed = 4
 
 while(True):
     id = client.read()
@@ -69,6 +74,7 @@ while(True):
     theta = math.atan2(g_y - pos.py, g_x - pos.px) - pos.pa
     print 'Theta: %f: ' % theta
     
+    total_factors = 0
     if (dist < g_r):
         v = 0
         del_x = 0
@@ -77,10 +83,12 @@ while(True):
         v = g_s * (dist - g_r)
         del_x = v * math.cos(theta)
         del_y = v * math.sin(theta)
+        total_factors += 1
     else:
         v = g_s * g_e
         del_x = v * math.cos(theta)
         del_y = v * math.sin(theta)
+        total_factors += 1
 
 #    points = []
     for i in range(0, ran.ranges_count):
@@ -96,6 +104,7 @@ while(True):
         if (dist <= o_e + o_r):
             del_x += -o_s * (o_e + o_r - dist) * math.cos(theta) 
             del_y += -o_s * (o_e + o_r - dist) * math.sin(theta)
+            total_factors += 1
         
         z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
         z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
@@ -108,24 +117,30 @@ while(True):
 #            gra.draw_multiline(points, ran.ranges_count * 2)
 
     # Now we have del_x and del_y, which describes the vetor along which the robot should move.
-    # Shit. x and rotational velocity.
-    # vel should be the distance along the curve, and rot_vel the change in heading
-    dist = math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
-    theta = math.atan2(del_y, del_x)
-    vel = (dist * math.pi) / 3
-    if theta < 0: # results in oscilation... for now.
-        rot_vel = -vel
+    if drive_type == "omni":
+        del_x = del_x / total_factors
+        del_y = del_y / total_factors
+        pos.set_cmd_vel(speed * del_x, speed * del_y, 0, 1)
+    elif drive_type == "diff":
+        # Should include current heading to damping sudden changes
+        total_factors += 1
+        del_x += old_del_x
+        del_y += old_del_y
+        del_x = del_x / total_factors
+        del_y = del_y / total_factors
+        # Shit. x and rotational velocity.
+
+        gra.clear()
+        gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
+
+        vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
+        rot_vel = speed * math.atan2(del_y, del_x)
+        
+        pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
+        old_del_x = del_x
+        old_del_y = del_y
     else:
-        rot_vel = vel
-
-    gra.clear()
-    gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
-
-    # These work well... except they give the robot an amazing turning radius.
-    #vel = math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
-    #rot_vel = math.atan2(del_y, del_x)
-    pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
-
+        print("Unrecognized drive type: ", drive_type)
 
 
 print("DONE!")
