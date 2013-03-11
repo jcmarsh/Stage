@@ -57,7 +57,7 @@ draw = True
 
 old_del_x = 0
 old_del_y = 0
-speed = 4
+speed = 16
 
 while(True):
     id = client.read()

@@ -6,6 +6,7 @@
 include "gridcar.inc"
 include "target.inc"
 include "map.inc"
+include "floor.inc"
 
 window
 (
@@ -13,14 +14,6 @@ window
 	scale 40
 	
 	show_data 1
-)
-
-floorplan
-(
-	name "grid"
-	size [16 16 .8]
-	pose [0 0 0 0]
-	bitmap "bitmaps/u_shape.png"
 )
 
 target

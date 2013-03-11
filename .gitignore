@@ -6,3 +6,4 @@ config.h
 *.pyc
 .DS_Store
 docsrc/stage
+experiments/floor.inc
