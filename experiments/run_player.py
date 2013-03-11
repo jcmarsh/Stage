@@ -2,15 +2,25 @@
 
 # Author James Marshall
 
-# The first arg should be the file name of the picture file to use as the floor plan for player.
+# The first arg should be the file name of the player config file
+# The second arg should be the file name of the picture file to use as the floor plan for player.
 import sys
 from subprocess import call
+from os import path
 
-if len(sys.argv) < 3:
+def print_n_quit():
     print 'usage: python run_player.py [name_of_config.cfg] [name_of_map.png]'
     exit()
 
+if len(sys.argv) < 3:
+    print_n_quit()
+
+config_name = sys.argv[1]
 file_name = sys.argv[2]
+
+if path.splitext(config_name)[1] != ".cfg" or path.splitext(file_name)[1] != ".png":
+    print_n_quit()
+
 print "Provided filename: ", file_name
 
 f = open("floor.inc", "w")
@@ -29,7 +39,6 @@ f.write(")\n\n")
 
 f.close()
 
-config_name = sys.argv[1]
 print "Ready to run config file: ", config_name
 
 call(["player", config_name])
