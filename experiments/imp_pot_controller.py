@@ -6,6 +6,7 @@ import math
 import sys
 from playerc import *
 from parse_world import *
+from a_star import *
 
 # Default port, can be overriden by cla
 port = 6665
@@ -59,6 +60,8 @@ old_del_x = 0
 old_del_y = 0
 speed = 16
 
+grid_num = 30
+
 while(True):
     id = client.read()
     scan_str = ""
@@ -89,6 +92,29 @@ while(True):
         del_x = v * math.cos(theta)
         del_y = v * math.sin(theta)
         total_factors += 1
+
+    # Draw the grid
+    # horizontal
+    points = []
+    interval = 16 / 30.0
+    thet = (2 * math.pi - pos.pa) % (2 * math.pi)
+    for i in range(0, grid_num):
+        x0 = 0 - (pos.px + 1)
+        y0 = i * interval - (pos.py + 1)
+        x0p = x0 * math.cos(thet) - y0 * math.sin(thet)
+        y0p = x0 * math.sin(thet) + y0 * math.cos(thet)
+        x1 = 16 - (pos.px + 1)
+        y1 = i * interval - (pos.py + 1)
+        x1p = x1 * math.cos(thet) - y1 * math.sin(thet)
+        y1p = x1 * math.sin(thet) + y1 * math.cos(thet)
+
+        points.append((x0p, y0p))
+        points.append((x1p, y1p))
+#    for j in range(0, gridA_num):
+#        points.append((j * interval, 0))
+#        points.append((j * interval, 16))
+    gra.clear()
+    gra.draw_multiline(points, grid_num * 2)
 
 #    points = []
     for i in range(0, ran.ranges_count):
@@ -130,8 +156,8 @@ while(True):
         del_y = del_y / total_factors
         # Shit. x and rotational velocity.
 
-        gra.clear()
-        gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
+#        gra.clear()
+#        gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
 
         vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
         rot_vel = speed * math.atan2(del_y, del_x)

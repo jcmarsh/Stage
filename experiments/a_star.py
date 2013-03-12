@@ -79,6 +79,8 @@ def A(start, goal, known_obstacles):
                 n.back_link = c_node
                 heapq.heappush(open_set, (tent_g_score + est_dist(n, goal), n))
                 
+
+# test code.
 print("Please work")
 g = node(8,8,0)
 s = node(2,2,0)
