@@ -6,6 +6,7 @@ import math
 import sys
 from playerc import *
 from parse_world import *
+from a_star import *
 
 # Default port, can be overriden by cla
 port = 6665
@@ -57,7 +58,9 @@ draw = True
 
 old_del_x = 0
 old_del_y = 0
-speed = 16
+speed = 4
+
+grid_num = 30
 
 while(True):
     id = client.read()
@@ -67,12 +70,12 @@ while(True):
 #    print scan_str
 
     # current location
-    print "Position: %f, %f: %f" % (pos.px, pos.py, pos.pa)
+    # print "Position: %f, %f: %f" % (pos.px, pos.py, pos.pa)
 
         # Head towards the goal!
     dist = math.sqrt(math.pow(g_x - pos.px, 2) + math.pow(g_y - pos.py, 2))
     theta = math.atan2(g_y - pos.py, g_x - pos.px) - pos.pa
-    print 'Theta: %f: ' % theta
+    # print 'Theta: %f: ' % theta
     
     total_factors = 0
     if (dist < g_r):
@@ -89,6 +92,46 @@ while(True):
         del_x = v * math.cos(theta)
         del_y = v * math.sin(theta)
         total_factors += 1
+
+    # Draw the grid
+    # horizontal
+    points = []
+    interval = 16.0 / grid_num
+    thet = -pos.pa
+    zero_x = -(pos.px + 1)
+    maxx_x = zero_x + 16
+    zero_y = -(pos.py + 1)
+    maxx_y = zero_y + 16
+    cos_thet = math.cos(thet)
+    sin_thet = math.sin(thet)
+    zx_cos = zero_x * cos_thet # attempted to optimize... didn't seem to help.
+    zx_sin = zero_x * sin_thet
+    mx_cos = maxx_x * cos_thet
+    mx_sin = maxx_x * sin_thet
+    zy_cos = zero_y * cos_thet
+    zy_sin = zero_y * sin_thet
+    my_cos = maxx_y * cos_thet
+    my_sin = maxx_y * sin_thet
+    for i in range(0, grid_num + 1):
+        zy_interval = zero_y + i * interval
+        x0 = zx_cos - zy_interval * sin_thet
+        y0 = zx_sin + zy_interval * cos_thet
+        x1 = mx_cos - zy_interval * sin_thet
+        y1 = mx_sin + zy_interval * cos_thet
+
+        points.append((x0, y0))
+        points.append((x1, y1))
+    for j in range(0, grid_num + 1):
+        zx_interval = zero_x + j * interval
+        x0 = zx_interval * cos_thet - zy_sin
+        y0 = zx_interval * sin_thet + zy_cos
+        x1 = zx_interval * cos_thet - my_sin
+        y1 = zx_interval * sin_thet + my_cos
+        
+        points.append((x0, y0))
+        points.append((x1, y1))
+    gra.clear()
+    gra.draw_multiline(points, (grid_num + 1) * 2 * 2)
 
 #    points = []
     for i in range(0, ran.ranges_count):
@@ -130,13 +173,13 @@ while(True):
         del_y = del_y / total_factors
         # Shit. x and rotational velocity.
 
-        gra.clear()
-        gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
+#        gra.clear()
+#        gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
 
         vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
         rot_vel = speed * math.atan2(del_y, del_x)
         
-        pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
+        #pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
         old_del_x = del_x
         old_del_y = del_y
     else:
