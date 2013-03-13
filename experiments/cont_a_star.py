@@ -66,12 +66,14 @@ grid = [[0 for x in range(grid_num)] for y in range(grid_num)]
 
 def add_obstacle(x, y):
     # translate x and y to global coords
-    thet = -pos.pa
-    x0 = x + pos.px + 1
-    y0 = y + pos.py + 1
 
-    xp = x0 * math.cos(thet) - y0 * math.sin(thet)
-    yp = x0 * math.sin(thet) + y0 * math.cos(thet)
+    t = pos.pa
+
+    x0 = x * math.cos(t) - y * math.sin(t)
+    y0 = x * math.sin(t) + y * math.cos(t)
+    
+    xp = x0 + pos.px + 1
+    yp = y0 + pos.py + 1
 
     # Gridify
     x_g = int(xp / interval)
@@ -80,6 +82,7 @@ def add_obstacle(x, y):
     print "NO GO: %d, %d" % (x_g, y_g)
     grid[x_g][y_g] = 1
 
+# global coordinates to robot cordinates
 def trans_point(p_x, p_y):
     t = - (pos.pa)
     x = - (pos.px + 1) + p_x
@@ -186,7 +189,7 @@ while(True):
         vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
         rot_vel = speed * math.atan2(del_y, del_x)
         
-        #pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
+        pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
         old_del_x = del_x
         old_del_y = del_y
     else:
