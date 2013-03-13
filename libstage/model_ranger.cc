@@ -188,7 +188,8 @@ double addNoise(double val) {
     sum += ((double) rand() / RAND_MAX);
   }
 
-  return scale * sum + val;
+  //return scale * sum + val;
+  return val;
 }
 
 void ModelRanger::Sensor::Update( ModelRanger* mod )

@@ -62,6 +62,33 @@ speed = 4
 
 grid_num = 30
 
+grid = [[0 for x in range(grid_num)] for y in range(grid_num)]
+
+def add_obstacle(x, y):
+    # translate x and y to global coords
+    thet = -pos.pa
+    x0 = x + pos.px + 1
+    y0 = y + pos.py + 1
+
+    xp = x0 * math.cos(thet) - y0 * math.sin(thet)
+    yp = x0 * math.sin(thet) + y0 * math.cos(thet)
+
+    # Gridify
+    x_g = int(xp / interval)
+    y_g = int(yp / interval)
+    
+    print "NO GO: %d, %d" % (x_g, y_g)
+    grid[x_g][y_g] = 1
+
+def trans_point(p_x, p_y):
+    t = - (pos.pa)
+    x = - (pos.px + 1) + p_x
+    y = - (pos.py + 1) + p_y
+
+    xp = x * math.cos(t) - y * math.sin(t)
+    yp = x * math.sin(t) + y * math.cos(t)
+    return (xp, yp)
+
 while(True):
     id = client.read()
     scan_str = ""
@@ -97,41 +124,20 @@ while(True):
     # horizontal
     points = []
     interval = 16.0 / grid_num
-    thet = -pos.pa
-    zero_x = -(pos.px + 1)
-    maxx_x = zero_x + 16
-    zero_y = -(pos.py + 1)
-    maxx_y = zero_y + 16
-    cos_thet = math.cos(thet)
-    sin_thet = math.sin(thet)
-    zx_cos = zero_x * cos_thet # attempted to optimize... didn't seem to help.
-    zx_sin = zero_x * sin_thet
-    mx_cos = maxx_x * cos_thet
-    mx_sin = maxx_x * sin_thet
-    zy_cos = zero_y * cos_thet
-    zy_sin = zero_y * sin_thet
-    my_cos = maxx_y * cos_thet
-    my_sin = maxx_y * sin_thet
     for i in range(0, grid_num + 1):
-        zy_interval = zero_y + i * interval
-        x0 = zx_cos - zy_interval * sin_thet
-        y0 = zx_sin + zy_interval * cos_thet
-        x1 = mx_cos - zy_interval * sin_thet
-        y1 = mx_sin + zy_interval * cos_thet
-
-        points.append((x0, y0))
-        points.append((x1, y1))
+        points.append(trans_point(0, i * interval))
+        points.append(trans_point(16, i * interval))
     for j in range(0, grid_num + 1):
-        zx_interval = zero_x + j * interval
-        x0 = zx_interval * cos_thet - zy_sin
-        y0 = zx_interval * sin_thet + zy_cos
-        x1 = zx_interval * cos_thet - my_sin
-        y1 = zx_interval * sin_thet + my_cos
-        
-        points.append((x0, y0))
-        points.append((x1, y1))
+        points.append(trans_point(j * interval, 0))
+        points.append(trans_point(j * interval, 16))
+
     gra.clear()
     gra.draw_multiline(points, (grid_num + 1) * 2 * 2)
+
+    for i in range(0, grid_num):
+        for j in range(0, grid_num):
+            if grid[i][j] == 1:
+                gra.draw_points([trans_point(i * interval + (interval / 2.0), j * interval + (interval / 2.0))], 1)
 
 #    points = []
     for i in range(0, ran.ranges_count):
@@ -140,7 +146,8 @@ while(True):
         obs_x = ran.ranges[i] * math.cos(tao)
         obs_y = ran.ranges[i] * math.sin(tao)
         # obs_x and obs_y are relative to the robot, and I'm okay with that.
-        
+        add_obstacle(obs_x, obs_y)
+
         dist = math.sqrt(math.pow(obs_x, 2) + math.pow(obs_y, 2))
         theta = math.atan2(obs_y, obs_x) 
 
