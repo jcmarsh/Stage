@@ -42,17 +42,17 @@ def reconstruct_path(n):
     return path
 
 # Modeled from the Wikipedia page.
-def A(start, goal, known_obstacles):
+def a_star_A(start, goal, known_obstacles):
     closed_set = []
     open_set = [] # heap ordered by estimated cost
     heapq.heappush(open_set, (0 + est_dist(start, goal), start))
 
     while len(open_set) > 0:
         c_cost, c_node = heapq.heappop(open_set)
-        print "Looking at: (%d,%d)" % (c_node.x, c_node.y)
+        #print "Looking at: (%d,%d)" % (c_node.x, c_node.y)
 
         if c_node == goal:
-            print "success. Now reconstruct"
+        #    print "success. Now reconstruct"
             return reconstruct_path(c_node)
         
         c_node.cost_est = c_cost
@@ -89,7 +89,7 @@ o1 = node(5,5,0)
 o2 = node(5,6,0)
 known = [o1, o2]
 
-p = A(s, g, known)
+p = a_star_A(s, g, known)
 
 for n in reversed(p):
     print "Node: %d,%d" % (n.x, n.y)
