@@ -78,9 +78,16 @@ def add_obstacle(x, y):
     # Gridify
     x_g = int(xp / interval)
     y_g = int(yp / interval)
-    
-    print "NO GO: %d, %d" % (x_g, y_g)
-    grid[x_g][y_g] = 1
+
+    if x_g == grid_num:
+        x_g = grid_num - 1 # Edge case
+    if y_g == grid_num:
+        y_g = grid_num - 1 # Edge case
+
+    if x_g < grid_num and y_g < grid_num:
+        grid[x_g][y_g] = 1
+    elif x_g > grid_num or y_g > grid_num:
+        print "ERROR! One of the grid indexes is greater than %d: %d, %d" % (grid_num, x_g, y_g)        
 
 # global coordinates to robot cordinates
 def trans_point(p_x, p_y):
