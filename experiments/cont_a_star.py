@@ -15,6 +15,7 @@ if len(sys.argv) >= 2:
 
 # Create client object
 client = playerc_client(None, 'localhost', port)
+
 # connect
 if client.connect() != 0:
     raise playerc_error_str()
@@ -58,7 +59,7 @@ draw = True
 
 old_del_x = 0
 old_del_y = 0
-speed = 4
+speed = 2
 
 grid_num = 30
 
@@ -85,7 +86,7 @@ def add_obstacle(x, y):
         y_g = grid_num - 1 # Edge case
 
     if x_g < grid_num and y_g < grid_num:
-        grid[x_g][y_g] = 1
+        grid[x_g][y_g] = grid[x_g][y_g] + 0.2 # AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
     elif x_g > grid_num or y_g > grid_num:
         print "ERROR! One of the grid indexes is greater than %d: %d, %d" % (grid_num, x_g, y_g)        
 
@@ -99,108 +100,96 @@ def trans_point(p_x, p_y):
     yp = x * math.sin(t) + y * math.cos(t)
     return (xp, yp)
 
+#not_moving = True
 while(True):
-    id = client.read()
-    scan_str = ""
-#    for i in range (0, ran.ranges_count):
-#        scan_str += ': %.3f ' % ran.ranges[i]
-#    print scan_str
+    idt = client.read()
 
-    # current location
-    # print "Position: %f, %f: %f" % (pos.px, pos.py, pos.pa)
+    if ran.info.datatime == pos.info.datatime:
+
+        ran.info.fresh = 0
+        pos.info.fresh = 0
 
         # Head towards the goal!
-    dist = math.sqrt(math.pow(g_x - pos.px, 2) + math.pow(g_y - pos.py, 2))
-    theta = math.atan2(g_y - pos.py, g_x - pos.px) - pos.pa
-    # print 'Theta: %f: ' % theta
+        dist = math.sqrt(math.pow(g_x - pos.px, 2) + math.pow(g_y - pos.py, 2))
+        theta = math.atan2(g_y - pos.py, g_x - pos.px) - pos.pa
+        # print 'Theta: %f: ' % theta
     
-    total_factors = 0
-    if (dist < g_r):
-        v = 0
-        del_x = 0
-        del_y = 0
-    elif ( g_r <= dist and dist <= g_e + g_r):
-        v = g_s * (dist - g_r)
-        del_x = v * math.cos(theta)
-        del_y = v * math.sin(theta)
-        total_factors += 1
-    else:
-        v = g_s * g_e
-        del_x = v * math.cos(theta)
-        del_y = v * math.sin(theta)
-        total_factors += 1
-
-    # Draw the grid
-    # horizontal
-    points = []
-    interval = 16.0 / grid_num
-    for i in range(0, grid_num + 1):
-        points.append(trans_point(0, i * interval))
-        points.append(trans_point(16, i * interval))
-    for j in range(0, grid_num + 1):
-        points.append(trans_point(j * interval, 0))
-        points.append(trans_point(j * interval, 16))
-
-    gra.clear()
-    gra.draw_multiline(points, (grid_num + 1) * 2 * 2)
-
-    for i in range(0, grid_num):
-        for j in range(0, grid_num):
-            if grid[i][j] == 1:
-                gra.draw_points([trans_point(i * interval + (interval / 2.0), j * interval + (interval / 2.0))], 1)
-
-#    points = []
-    for i in range(0, ran.ranges_count):
-        # figure out location of the obstacle...
-        tao = (2 * math.pi * i) / ran.ranges_count
-        obs_x = ran.ranges[i] * math.cos(tao)
-        obs_y = ran.ranges[i] * math.sin(tao)
-        # obs_x and obs_y are relative to the robot, and I'm okay with that.
-        add_obstacle(obs_x, obs_y)
-
-        dist = math.sqrt(math.pow(obs_x, 2) + math.pow(obs_y, 2))
-        theta = math.atan2(obs_y, obs_x) 
-
-        if (dist <= o_e + o_r):
-            del_x += -o_s * (o_e + o_r - dist) * math.cos(theta) 
-            del_y += -o_s * (o_e + o_r - dist) * math.sin(theta)
+        total_factors = 0
+        if (dist < g_r):
+            v = 0
+            del_x = 0
+            del_y = 0
+        elif ( g_r <= dist and dist <= g_e + g_r):
+            v = g_s * (dist - g_r)
+            del_x = v * math.cos(theta)
+            del_y = v * math.sin(theta)
             total_factors += 1
+        else:
+            v = g_s * g_e
+            del_x = v * math.cos(theta)
+            del_y = v * math.sin(theta)
+            total_factors += 1
+
+        # Draw the grid
+        # horizontal
+        points = []
+        interval = 16.0 / grid_num
+        for i in range(0, grid_num + 1):
+            points.append(trans_point(0, i * interval))
+            points.append(trans_point(16, i * interval))
+        for j in range(0, grid_num + 1):
+            points.append(trans_point(j * interval, 0))
+            points.append(trans_point(j * interval, 16))
+
+        gra.clear()
+        gra.draw_multiline(points, (grid_num + 1) * 2 * 2)
+
+        for i in range(0, grid_num):
+            for j in range(0, grid_num):
+                if grid[i][j] >= 1:
+                    gra.draw_points([trans_point(i * interval + (interval / 2.0), j * interval + (interval / 2.0))], 1)
+
+        for i in range(0, ran.ranges_count):
+            # figure out location of the obstacle...
+            tao = (2 * math.pi * i) / ran.ranges_count
+            obs_x = ran.ranges[i] * math.cos(tao)
+            obs_y = ran.ranges[i] * math.sin(tao)
+            # obs_x and obs_y are relative to the robot, and I'm okay with that.
+            add_obstacle(obs_x, obs_y)
+
+            dist = math.sqrt(math.pow(obs_x, 2) + math.pow(obs_y, 2))
+            theta = math.atan2(obs_y, obs_x) 
+
+            if (dist <= o_e + o_r):
+                del_x += -o_s * (o_e + o_r - dist) * math.cos(theta) 
+                del_y += -o_s * (o_e + o_r - dist) * math.sin(theta)
+                total_factors += 1
         
-        z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
-        z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
+            z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
+            z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
 
-#        points.append((obs_x, obs_y))
-#        points.append((obs_x + z_x, obs_y + z_y))
+        # Now we have del_x and del_y, which describes the vetor along which the robot should move.
+        if drive_type == "omni":
+            del_x = del_x / total_factors
+            del_y = del_y / total_factors
+            pos.set_cmd_vel(speed * del_x, speed * del_y, 0, 1)
+        elif drive_type == "diff":
+            # Should include current heading to damping sudden changes
+            total_factors += 1
+            del_x += old_del_x
+            del_y += old_del_y
+            del_x = del_x / total_factors
+            del_y = del_y / total_factors
+            # Shit. x and rotational velocity.
 
-#        if draw:
-#            gra.clear()
-#            gra.draw_multiline(points, ran.ranges_count * 2)
-
-    # Now we have del_x and del_y, which describes the vetor along which the robot should move.
-    if drive_type == "omni":
-        del_x = del_x / total_factors
-        del_y = del_y / total_factors
-        pos.set_cmd_vel(speed * del_x, speed * del_y, 0, 1)
-    elif drive_type == "diff":
-        # Should include current heading to damping sudden changes
-        total_factors += 1
-        del_x += old_del_x
-        del_y += old_del_y
-        del_x = del_x / total_factors
-        del_y = del_y / total_factors
-        # Shit. x and rotational velocity.
-
-#        gra.clear()
-#        gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
-
-        vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
-        rot_vel = speed * math.atan2(del_y, del_x)
+            vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
+            rot_vel = speed * math.atan2(del_y, del_x)
         
-        pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
-        old_del_x = del_x
-        old_del_y = del_y
-    else:
-        print("Unrecognized drive type: ", drive_type)
+            pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
+            old_del_x = del_x
+            old_del_y = del_y
+        else:
+            print("Unrecognized drive type: ", drive_type)
 
 
 print("DONE!")
