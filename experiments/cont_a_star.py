@@ -47,9 +47,9 @@ target_loc_rel = to_robot_coords(robot_loc, target_loc)
 drive_type = search_text_property("gridcar.inc", "drive")
 g_x = target_loc_rel[0]
 g_y = target_loc_rel[1]
-g_r = .1 # radius of goal, in meters
-g_e = 2 # extent of field (greater than this, move at maximum speed)
-g_s = .5 # scale factor
+g_r = .05 # radius of goal, in meters
+g_e = 4 # extent of field (greater than this, move at maximum speed)
+g_s = 1 # scale factor
 o_r = .0 # radius of obstacles
 o_e = 1.5
 o_s = .2
@@ -59,11 +59,12 @@ draw = True
 
 old_del_x = 0
 old_del_y = 0
-speed = 2
+speed = .5
 
-grid_num = 30
+grid_num = 16
 
 grid = [[0 for x in range(grid_num)] for y in range(grid_num)]
+path = [[False for x in range(grid_num)] for y in range(grid_num)]
 obstacles = []
 
 def add_obstacle(x, y):
@@ -86,7 +87,7 @@ def add_obstacle(x, y):
         y_g = grid_num - 1 # Edge case
 
     if x_g < grid_num and y_g < grid_num:
-        grid[x_g][y_g] = grid[x_g][y_g] + 0.2 # AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+        grid[x_g][y_g] = grid[x_g][y_g] + 0.3 # AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
         if grid[x_g][y_g] >= 1:
             obstacles.append(node(x_g, y_g, 0))
     elif x_g > grid_num or y_g > grid_num:
@@ -103,12 +104,19 @@ def trans_point(p_x, p_y):
     return (xp, yp)
 
 #not_moving = True
+next_in_path_x = 0
+next_in_path_y = 0
 while(True):
     idt = client.read()
 
     # Head towards the goal!
-    dist = math.sqrt(math.pow(g_x - pos.px, 2) + math.pow(g_y - pos.py, 2))
-    theta = math.atan2(g_y - pos.py, g_x - pos.px) - pos.pa
+    # and by goal I mean next in path!
+    
+    dist = math.sqrt(math.pow(next_in_path_x - pos.px, 2) + math.pow(next_in_path_y - pos.py, 2))
+    theta = math.atan2(next_in_path_y - pos.py, next_in_path_x - pos.px) - pos.pa
+    
+#    dist = math.sqrt(math.pow(g_x - pos.px, 2) + math.pow(g_y - pos.py, 2))
+#    theta = math.atan2(g_y - pos.py, g_x - pos.px) - pos.pa
     # print 'Theta: %f: ' % theta
     
     total_factors = 0
@@ -144,11 +152,15 @@ while(True):
     for i in range(0, grid_num):
         for j in range(0, grid_num):
             if grid[i][j] >= 1:
-                gra.setcolor((255, 0, 0, 0))
                 gra.draw_points([trans_point(i * interval + (interval / 2.0), j * interval + (interval / 2.0))], 1)
-            elif grid[i][j] < 0:
-                gra.setcolor((0, 255, 0, 0))
+    for i in range(0, grid_num):
+        for j in range(0, grid_num):
+            if path[i][j]:
                 gra.draw_points([trans_point(i * interval + (interval / 2.0), j * interval + (interval / 2.0))], 1)
+                gra.draw_points([trans_point(i * interval + (interval / 2.0) - .1, j * interval + (interval / 2.0) - .1)], 1)
+                gra.draw_points([trans_point(i * interval + (interval / 2.0) + .1, j * interval + (interval / 2.0) + .1)], 1)
+                gra.draw_points([trans_point(i * interval + (interval / 2.0) - .1, j * interval + (interval / 2.0) + .1)], 1)
+                gra.draw_points([trans_point(i * interval + (interval / 2.0) + .1, j * interval + (interval / 2.0) - .1)], 1)
                 
 
 
@@ -160,23 +172,28 @@ while(True):
         # obs_x and obs_y are relative to the robot, and I'm okay with that.
         add_obstacle(obs_x, obs_y)
 
-#        dist = math.sqrt(math.pow(obs_x, 2) + math.pow(obs_y, 2))
-#        theta = math.atan2(obs_y, obs_x) 
+        dist = math.sqrt(math.pow(obs_x, 2) + math.pow(obs_y, 2))
+        theta = math.atan2(obs_y, obs_x) 
 
-#        if (dist <= o_e + o_r):
-#            del_x += -o_s * (o_e + o_r - dist) * math.cos(theta) 
-#            del_y += -o_s * (o_e + o_r - dist) * math.sin(theta)
-#            total_factors += 1
+        if (dist <= o_e + o_r):
+            del_x += -o_s * (o_e + o_r - dist) * math.cos(theta) 
+            del_y += -o_s * (o_e + o_r - dist) * math.sin(theta)
+            total_factors += 1
             
-#        z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
-#        z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
+        z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
+        z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
 
     current_node = node(int((pos.px + 1.0) / interval),  int((pos.py + 1.0) / interval), 0)
     goal_node = node(int((g_x + 1.0) / interval),  int((g_y + 1.0) / interval), 0)
-    path = a_star_A(current_node, goal_node, obstacles)
+    p = a_star_A(current_node, goal_node, obstacles)
 
-    for n in reversed(path):
-        grid[n.x][n.y] = -1
+    for i in range(0, grid_num):
+        for j in range(0, grid_num):
+            path[i][j] = False
+    for n in reversed(p):
+        path[n.x][n.y] = True
+    next_in_path_x = p[len(p) - 2].x
+    next_in_path_y = p[len(p) - 2].y
 #print "Node: %d,%d" % (n.x, n.y)
 
 

@@ -25,7 +25,7 @@ def gen_neighbors(n, known_obstacles):
     neighbors = []
     for i in range(-1, 2):
         for j in range(-1, 2):
-            if not i == j == 0:
+            if not i == j and not i == -j:
                 new_node = node(n.x + i, n.y + j, n.cost_to + 1)
                 if not new_node in known_obstacles:
                     neighbors.append(new_node)
@@ -49,10 +49,8 @@ def a_star_A(start, goal, known_obstacles):
 
     while len(open_set) > 0:
         c_cost, c_node = heapq.heappop(open_set)
-        #print "Looking at: (%d,%d)" % (c_node.x, c_node.y)
 
         if c_node == goal:
-        #    print "success. Now reconstruct"
             return reconstruct_path(c_node)
         
         c_node.cost_est = c_cost
@@ -81,6 +79,7 @@ def a_star_A(start, goal, known_obstacles):
                 
 
 # test code.
+'''
 print("Please work")
 g = node(8,8,0)
 s = node(2,2,0)
@@ -93,7 +92,7 @@ p = a_star_A(s, g, known)
 
 for n in reversed(p):
     print "Node: %d,%d" % (n.x, n.y)
-            
+'''         
             
             
     
