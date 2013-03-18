@@ -108,14 +108,9 @@ while(True):
 #        gra.clear()
 #        gra.draw_multiline(points, ran.ranges_count * 2)
 
-
     gra.clear()
     gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
 
-
     pos.set_cmd_vel(del_x, del_y, 0.0, 1)
-
-
-
 print("DONE!")
 

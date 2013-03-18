@@ -75,7 +75,7 @@ define gridcar position
 		z [0 4]
 	)
 
-	drive "diff"
+	drive "omni"
 	
 	gridcar_sonars()
 
