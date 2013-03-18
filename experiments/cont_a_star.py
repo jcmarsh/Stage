@@ -48,13 +48,16 @@ drive_type = search_text_property("gridcar.inc", "drive")
 g_x = target_loc_rel[0]
 g_y = target_loc_rel[1]
 g_r = 0 # radius of goal, in meters
-g_e = 4 # extent of field (greater than this, move at maximum speed)
-g_s = 1 # scale factor
+g_e = 3 # extent of field (greater than this, move at maximum speed)
+g_s = 3 # scale factor
+o_r = .0 # radius of obstacles
+o_e = 2
+o_s = .5
 
 print 'Relative to Hank, the target is at: %.2f %.2f' % (target_loc_rel[0], target_loc_rel[1])
 draw = True
 
-speed = 2
+speed = 1
 
 grid_num = 32
 
@@ -135,6 +138,10 @@ while(True):
 
     idt = client.read()
 
+    del_x = 0
+    del_y = 0 
+
+    num_factors = 1 # one for the target.
     # check for obstacles
     for i in range(0, ran.ranges_count):
         # figure out location of the obstacle...
@@ -143,6 +150,15 @@ while(True):
         obs_y = ran.ranges[i] * math.sin(tao)
         # obs_x and obs_y are relative to the robot, and I'm okay with that.
         add_obstacle(obs_x, obs_y)
+
+        dist = math.sqrt(math.pow(obs_x, 2) + math.pow(obs_y, 2))
+        theta = math.atan2(obs_y, obs_x) 
+
+        if (dist <= o_e + o_r):
+            del_x += -o_s * (o_e + o_r - dist) * math.cos(theta) 
+            del_y += -o_s * (o_e + o_r - dist) * math.sin(theta)
+            num_factors = num_factors + 1
+
 
     # calculate possible path
     current_node = node(int((pos.px + 1.0) / interval),  int((pos.py + 1.0) / interval), 0)
@@ -157,37 +173,34 @@ while(True):
         path_map[n.x][n.y] = True
 
     goal_node = path[len(path) - 2]
-#    goal = trans_point(goal_node.x * interval + (interval / 2.0), goal_node.y * interval + (interval / 2.0))
     [goal_x, goal_y] = trans_point(goal_node.x * interval + (interval / 2.0), goal_node.y * interval + (interval / 2.0))
-    print "Goal: %f, %f" % (goal_x, goal_y)
+    #print "Goal: %f, %f" % (goal_x, goal_y)
 
-    dist = math.sqrt(math.pow(goal_x - pos.px, 2) + math.pow(goal_y - pos.py, 2))
-    theta = math.atan2(goal_y - pos.py, goal_x - pos.px)
+    dist = math.sqrt(math.pow(goal_x, 2) + math.pow(goal_y, 2))
+    theta = math.atan2(goal_y, goal_x)
     
-    del_x = goal_x
-    del_y = goal_y
-    #if (g_r <= dist and dist <= g_e + g_r):
-    #    v = g_s * (dist - g_r)
-    #    del_x = v * math.cos(theta)
-    #    del_y = v * math.sin(theta)
-    #elif dist > g_e + g_r:
-    #v = g_s * g_e
-    #del_x = v * math.cos(theta)
-    #del_y = v * math.sin(theta)
-
-
-#    gra.clear()
-#    gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
-#    gra.draw_polyline([(0, 0), (goal_x, goal_y)], 2)
+    if (g_r <= dist and dist <= g_e + g_r):
+        v = g_s * (dist - g_r)
+        del_x = v * math.cos(theta)
+        del_y = v * math.sin(theta)
+    elif dist > g_e + g_r:
+        v = g_s * g_e
+        del_x = v * math.cos(theta)
+        del_y = v * math.sin(theta)
  
+    del_x = del_x / num_factors
+    del_y = del_y / num_factors
     # Now we have del_x and del_y, which describes the vetor along which the robot should move.
     if drive_type == "omni":
         pos.set_cmd_vel(speed * del_x, speed * del_y, 0, 1)
-    elif drive_type == "diff":
-        vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
+    elif drive_type == "diff":        
         rot_vel = math.atan2(del_y, del_x)
+        if math.fabs(rot_vel) > (math.pi / 2.0):
+            vel = 0
+        else:
+            vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
         
-        print "Velocities: %f %f" % (vel, rot_vel)
+#        print "Velocities: %f %f" % (vel, rot_vel)
         pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
     else:
         print("Unrecognized drive type: ", drive_type)
