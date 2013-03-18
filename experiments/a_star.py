@@ -25,19 +25,19 @@ def gen_neighbors(n, known_obstacles):
     neighbors = []
     for i in range(-1, 2):
         for j in range(-1, 2):
-#            if not i == j and not i == -j: # Four neighbors
-            if not i == j == 0: # 8 neighbors
-                if i == j or i == -j:
-                    new_node0 = node(n.x + i, n.y, 0)
-                    new_node1 = node(n.x, n.y + j, 0)
-                    if not (new_node0 in known_obstacles) or not (new_node1 in known_obstacles):
-                        new_node = node(n.x + i, n.y + j, n.cost_to + 1.414)
-                        if not new_node in known_obstacles:
+            if 0 <= n.x + i and n.x + i < len(known_obstacles) and 0 <= n.y + j and n.y + j < len(known_obstacles):
+                if not i == j == 0: # 8 neighbors
+                    if i == j or i == -j:
+                        new_node0 = node(n.x + i, n.y, 0)
+                        new_node1 = node(n.x, n.y + j, 0)
+                        if not known_obstacles[n.x + i][n.y] or not known_obstacles[n.x][n.y + j]:
+                            new_node = node(n.x + i, n.y + j, n.cost_to + 1.414)
+                            if not known_obstacles[n.x + i][n.y + j]:
+                                neighbors.append(new_node)
+                    else:
+                        new_node = node(n.x + i, n.y + j, n.cost_to + 1)
+                        if not known_obstacles[n.x + i][n.y + j]:
                             neighbors.append(new_node)
-                else:
-                    new_node = node(n.x + i, n.y + j, n.cost_to + 1)
-                    if not new_node in known_obstacles:
-                        neighbors.append(new_node)
     return neighbors
 
 def reconstruct_path(n):

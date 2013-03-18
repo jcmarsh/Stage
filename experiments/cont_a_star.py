@@ -4,6 +4,7 @@
 
 import math
 import sys
+import time
 from playerc import *
 from parse_world import *
 from a_star import *
@@ -47,25 +48,25 @@ target_loc_rel = to_robot_coords(robot_loc, target_loc)
 drive_type = search_text_property("gridcar.inc", "drive")
 g_x = target_loc_rel[0]
 g_y = target_loc_rel[1]
-g_r = .05 # radius of goal, in meters
+g_r = 0 # radius of goal, in meters
 g_e = 4 # extent of field (greater than this, move at maximum speed)
-g_s = 2 # scale factor
+g_s = 1 # scale factor
 o_r = .0 # radius of obstacles
-o_e = 1.5
-o_s = .2
+o_e = 1
+o_s = 2
 
 print 'Relative to Hank, the target is at: %.2f %.2f' % (target_loc_rel[0], target_loc_rel[1])
 draw = True
 
 old_del_x = 0
 old_del_y = 0
-speed = .5
+speed = 1
 
-grid_num = 16
+grid_num = 32
 
 grid = [[0 for x in range(grid_num)] for y in range(grid_num)]
 path = [[False for x in range(grid_num)] for y in range(grid_num)]
-obstacles = []
+obstacles = [[False for x in range(grid_num)] for y in range(grid_num)]
 
 def add_obstacle(x, y):
     # translate x and y to global coords
@@ -89,7 +90,7 @@ def add_obstacle(x, y):
     if x_g < grid_num and y_g < grid_num:
         grid[x_g][y_g] = grid[x_g][y_g] + 0.3 # AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
         if grid[x_g][y_g] >= 1:
-            obstacles.append(node(x_g, y_g, 0))
+            obstacles[x_g][y_g] = True
     elif x_g > grid_num or y_g > grid_num:
         print "ERROR! One of the grid indexes is greater than %d: %d, %d" % (grid_num, x_g, y_g)        
 
@@ -106,6 +107,7 @@ def trans_point(p_x, p_y):
 #not_moving = True
 next_in_path_x = 0
 next_in_path_y = 0
+
 while(True):
     idt = client.read()
 
@@ -182,7 +184,7 @@ while(True):
             
         z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
         z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
-
+        
     current_node = node(int((pos.px + 1.0) / interval),  int((pos.py + 1.0) / interval), 0)
     goal_node = node(int((g_x + 1.0) / interval),  int((g_y + 1.0) / interval), 0)
     p = a_star_A(current_node, goal_node, obstacles)
@@ -204,16 +206,23 @@ while(True):
         pos.set_cmd_vel(speed * del_x, speed * del_y, 0, 1)
     elif drive_type == "diff":
         # Should include current heading to damping sudden changes
-        total_factors += 1
-        del_x += old_del_x
-        del_y += old_del_y
+        #total_factors += 1
+        #del_x += old_del_x
+        #del_y += old_del_y
         del_x = del_x / total_factors
         del_y = del_y / total_factors
         # Shit. x and rotational velocity.
 
-        vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
-        rot_vel = speed * math.atan2(del_y, del_x)
+        rot_vel = math.atan2(del_y, del_x)
+        if math.fabs(rot_vel) > (math.pi / 2):
+            # Maintain forward momentum, scale by rot_vel
+            vel = speed * math.sqrt(math.pow(del_x, 2) + math.pow(del_y, 2))
+            vel = vel - vel * (rot_vel / (math.pi / 2))
+        else:
+            # turn in place
+            vel = 0
         
+        print "Velocities: %f %f" % (vel, rot_vel)
         pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
         old_del_x = del_x
         old_del_y = del_y
