@@ -30,6 +30,13 @@ def search_text_property(file_name, property_name):
             args = (line.partition('"')[2]).partition('"')[0]
             return args
 
+#def find_port_by_name(file_name, robot_name):
+#    f = open(file_name, "r")
+#    search_str = "model \"" + robot_name +"\""
+#    while True:
+#        line = f.next()
+#        if line.contsearch_str = 
+
 # Test code
 target = search_pose("find_target.world", "target0")
 robot = search_pose("find_target.world", "hank")

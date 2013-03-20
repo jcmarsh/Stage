@@ -42,6 +42,8 @@ print "Robot size: (%.3f,%.3f)" % (pos.size[0], pos.size[1])
 
 # figure out the location of the target (from the world file) in robot coords.
 robot_loc = search_pose("find_target.world", "hank")
+offset_x = robot_loc[0] + 8
+offset_y = robot_loc[1] + 8
 target_loc = search_pose("find_target.world", "target0")
 target_loc_rel = to_robot_coords(robot_loc, target_loc)
 drive_type = search_text_property("gridcar.inc", "drive")
@@ -57,7 +59,7 @@ o_s = .5
 print 'Relative to Hank, the target is at: %.2f %.2f' % (target_loc_rel[0], target_loc_rel[1])
 draw = True
 
-speed = 1
+speed = .2
 
 grid_num = 32
 
@@ -74,8 +76,8 @@ def add_obstacle(x, y):
     x0 = x * math.cos(t) - y * math.sin(t)
     y0 = x * math.sin(t) + y * math.cos(t)
     
-    xp = x0 + pos.px + 1
-    yp = y0 + pos.py + 1
+    xp = x0 + pos.px + offset_x
+    yp = y0 + pos.py + offset_y
 
     # Gridify
     x_g = int(xp / interval)
@@ -96,8 +98,8 @@ def add_obstacle(x, y):
 # global coordinates to robot cordinates
 def trans_point(p_x, p_y):
     t = - (pos.pa)
-    x = - (pos.px + 1) + p_x
-    y = - (pos.py + 1) + p_y
+    x = - (pos.px + offset_x) + p_x
+    y = - (pos.py + offset_y) + p_y
 
     xp = x * math.cos(t) - y * math.sin(t)
     yp = x * math.sin(t) + y * math.cos(t)
@@ -161,7 +163,7 @@ while(True):
 
 
     # calculate possible path
-    current_node = node(int((pos.px + 1.0) / interval),  int((pos.py + 1.0) / interval), 0)
+    current_node = node(int((pos.px + offset_x) / interval),  int((pos.py + offset_y) / interval), 0)
     goal_node = node(int((g_x + 1.0) / interval),  int((g_y + 1.0) / interval), 0)
     path = a_star_A(current_node, goal_node, obstacles)
 
@@ -194,7 +196,7 @@ while(True):
     if drive_type == "omni":
         pos.set_cmd_vel(speed * del_x, speed * del_y, 0, 1)
     elif drive_type == "diff":        
-        rot_vel = math.atan2(del_y, del_x)
+        rot_vel = speed * math.atan2(del_y, del_x)
         if math.fabs(rot_vel) > (math.pi / 2.0):
             vel = 0
         else:
