@@ -10,8 +10,12 @@ from a_star import *
 
 # Default port, can be overriden by cla
 port = 6665
+robot_name = "SAD (Because you didn't name me.)"
+# CLA should be the name of a robot in the cfg file
 if len(sys.argv) >= 2:
-    port = int(sys.argv[1])
+    robot_name = sys.argv[1]
+    port = find_port_by_name("find_target.cfg", robot_name)
+
 
 # Create client object
 client = playerc_client(None, 'localhost', port)
@@ -41,7 +45,7 @@ if pos.get_geom() != 0:
 print "Robot size: (%.3f,%.3f)" % (pos.size[0], pos.size[1])
 
 # figure out the location of the target (from the world file) in robot coords.
-robot_loc = search_pose("find_target.world", "hank")
+robot_loc = search_pose("find_target.world", robot_name)
 offset_x = robot_loc[0] + 8
 offset_y = robot_loc[1] + 8
 target_loc = search_pose("find_target.world", "target0")
@@ -56,7 +60,7 @@ o_r = .0 # radius of obstacles
 o_e = 2
 o_s = .5
 
-print 'Relative to Hank, the target is at: %.2f %.2f' % (target_loc_rel[0], target_loc_rel[1])
+print 'Relative to ' + robot_name + ', the target is at: %.2f %.2f' % (target_loc_rel[0], target_loc_rel[1])
 draw = True
 
 speed = .2
