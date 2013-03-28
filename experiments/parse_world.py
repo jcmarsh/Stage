@@ -19,9 +19,6 @@ def search_pose(file_name, name):
             if name in line:
                 matched = True
 
-def to_robot_coords(robot, target):
-    return (target[0] - robot[0], target[1] - robot[1])
-
 def search_text_property(file_name, property_name):
     f = open(file_name, "r")
     for line in f:
@@ -54,7 +51,7 @@ port = find_port_by_name("find_target.cfg", "hank")
 print("DONE!")
 print("Point 1:", robot[0], robot[1])
 print("Point 2:", target[0], target[1])
-print("Relative: ", to_robot_coords(robot, target))
+print("Relative: ", to_robot_coords(robot, target)) # Will fail, to_robot_coords now in graph_util
 print("-------------------")
 print("gridcar.inc drive type:", drive_type_0)
 print("port: ", port)
