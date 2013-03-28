@@ -1,0 +1,31 @@
+# find_target.world
+# A simple scenario where the robot must find the target.
+# Author: James Marshall
+# Date: Feb 25 2013
+
+include "gridcar.inc"
+include "target.inc"
+include "map.inc"
+include "floor.inc"
+
+window
+(
+	size [ 900 900 ]
+	scale 40
+	
+	show_data 1
+)
+
+target
+(
+	name "target0"
+	pose [7 7 0 0]
+)
+
+gridcar
+(
+	name "hank"
+
+	pose [-5 -7 0 0] # Important: start angle is not parsed! Assumed to be 0
+	color "blue"
+)
