@@ -77,8 +77,8 @@ def add_obstacle(x, y):
     x0 = x * math.cos(t) - y * math.sin(t)
     y0 = x * math.sin(t) + y * math.cos(t)
     
-    xp = x0 + pos.px + offset_x
-    yp = y0 + pos.py + offset_y
+    xp = x0 + pos.px + offset.x
+    yp = y0 + pos.py + offset.y
 
     # Gridify
     x_g = int(xp / interval)
@@ -99,6 +99,15 @@ def add_obstacle(x, y):
 while(True):
     idt = client.read()
 
+    # check for obstacles
+    for i in range(0, ran.ranges_count):
+        # figure out location of the obstacle...
+        tao = (2 * math.pi * i) / ran.ranges_count
+        obs_x = ran.ranges[i] * math.cos(tao)
+        obs_y = ran.ranges[i] * math.sin(tao)
+        # obs_x and obs_y are relative to the robot, and I'm okay with that.
+        add_obstacle(obs_x, obs_y)
+
     # calculate possible path
     current_node = node(int((pos.px + offset.x) / interval),  int((pos.py + offset.y) / interval), 0)
     goal_node = node(int((goal.x + 1.0) / interval),  int((goal.y + 1.0) / interval), 0)
@@ -111,8 +120,13 @@ while(True):
     for n in path:
         path_map[n.x][n.y] = True
 
-    goal_node = path[len(path) - 2]
-    goal_n_loc = trans_point(pos, offset, Point(goal_node.x * interval + (interval / 2.0), goal_node.y * interval + (interval / 2.0)))
+    wp_1 = path[len(path) - 2]
+    wp_2 = path[len(path) - 3]
+    waypoint = Point( -offset.x + wp_1.x * interval + (interval / 2.0), -offset.y + wp_1.y * interval + (interval / 2.0))
+    theta = math.atan2(wp_2.y - wp_1.y, wp_2.x - wp_1.x)
+
+#    print "Target Pose: (%f,%f):%f" % (waypoint.x, waypoint.y, theta)
+    pla.set_cmd_pose(waypoint.x, waypoint.y, theta)
     
     draw_all(gra, pos, offset, grid_num, grid, path_map)
 
