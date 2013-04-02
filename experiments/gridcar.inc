@@ -76,7 +76,9 @@ define gridcar position
 	)
 
 	drive "diff"
-	
+
+	localization "gps"	
+
 	gridcar_sonars()
 
 	obstacle_return 1	# can hit things
