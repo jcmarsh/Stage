@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 
-# Copied in part from the player source examples.
+# Simple controller that implements the artificial potential method
+# for OMNI drive robots.
+
+# author: James Marshall
+
 
 import math
 import sys
 from playerc import *
+from graph_util import *
 from parse_world import *
 from generic_start import *
 
-client = startup(sys.argv, "find_target.cfg"
+client = startup(sys.argv, "find_target.cfg")
 pos, ran, gra = create_std(client)
 
-# figure out the location of the target (from the world file) in robot coords.
-robot_loc = search_pose("find_target.world", "hank")
+# figure out the location of the target (from the world file)
 target_loc = search_pose("find_target.world", "target0")
-target_loc_rel = to_robot_coords(robot_loc, target_loc)
-g_x = target_loc_rel[0]
-g_y = target_loc_rel[1]
+goal = Point(target_loc[0], target_loc[1])
 g_r = .1 # radius of goal, in meters
 g_e = 2 # extent of field (greater than this, move at maximum speed)
 g_s = .2 # scale factor
@@ -24,23 +26,12 @@ o_r = .0 # radius of obstacles
 o_e = 2
 o_s = .1
 
-print 'Relative to Hank, the target is at: %.2f %.2f' % (target_loc_rel[0], target_loc_rel[1])
-draw = True
-
 while(True):
-    id = client.read()
-    scan_str = ""
-#    for i in range (0, ran.ranges_count):
-#        scan_str += ': %.3f ' % ran.ranges[i]
-#    print scan_str
+    idt = client.read()
 
-    # current location
-    print "Position: %f, %f: %f" % (pos.px, pos.py, pos.pa)
-
-        # Head towards the goal!
-    dist = math.sqrt(math.pow(g_x - pos.px, 2) + math.pow(g_y - pos.py, 2))
-    theta = math.atan2(g_y - pos.py, g_x - pos.px)
-    print 'Theta: %f: ' % theta
+    # Head towards the goal!
+    dist = math.sqrt(math.pow(goal.x - pos.px, 2) + math.pow(goal.y - pos.py, 2))
+    theta = math.atan2(goal.y - pos.py, goal.x - pos.px) - pos.pa
     
     if (dist < g_r):
         v = 0
@@ -55,15 +46,13 @@ while(True):
         del_x = v * math.cos(theta)
         del_y = v * math.sin(theta)
 
-#    points = []
     for i in range(0, ran.ranges_count):
         # figure out location of the obstacle...
         tao = (2 * math.pi * i) / ran.ranges_count
         obs_x = ran.ranges[i] * math.cos(tao)
         obs_y = ran.ranges[i] * math.sin(tao)
         # obs_x and obs_y are relative to the robot, and I'm okay with that.
-
-        
+  
         dist = math.sqrt(math.pow(obs_x, 2) + math.pow(obs_y, 2))
         theta = math.atan2(obs_y, obs_x) 
 
@@ -73,13 +62,6 @@ while(True):
         
         z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
         z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
-
-#        points.append((obs_x, obs_y))
-#        points.append((obs_x + z_x, obs_y + z_y))
-
-#    if draw:
-#        gra.clear()
-#        gra.draw_multiline(points, ran.ranges_count * 2)
 
     gra.clear()
     gra.draw_polyline([(0, 0), (del_x, del_y)], 2)

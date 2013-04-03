@@ -5,6 +5,7 @@
 import math
 import sys
 from playerc import *
+from graph_util import *
 from parse_world import *
 from generic_start import *
 
@@ -13,12 +14,9 @@ client = startup(sys.argv, "find_target.cfg")
 pos, ran, gra = create_std(client)
 
 # figure out the location of the target (from the world file) in robot coords.
-robot_loc = search_pose("find_target.world", "hank")
 target_loc = search_pose("find_target.world", "target0")
-target_loc_rel = to_robot_coords(robot_loc, target_loc)
 drive_type = search_text_property("gridcar.inc", "drive")
-g_x = target_loc_rel[0]
-g_y = target_loc_rel[1]
+goal = Point(target_loc[0], target_loc[1])
 g_r = .1 # radius of goal, in meters
 g_e = 2 # extent of field (greater than this, move at maximum speed)
 g_s = .5 # scale factor
@@ -26,27 +24,18 @@ o_r = .0 # radius of obstacles
 o_e = 1.5
 o_s = .2
 
-print 'Relative to Hank, the target is at: %.2f %.2f' % (target_loc_rel[0], target_loc_rel[1])
-draw = True
+print "The target is at: %.2f %.2f" % (goal.x, goal.y)
 
 old_del_x = 0
 old_del_y = 0
-speed = 16
+speed = 8
 
 while(True):
     id = client.read()
-    scan_str = ""
-#    for i in range (0, ran.ranges_count):
-#        scan_str += ': %.3f ' % ran.ranges[i]
-#    print scan_str
 
-    # current location
-    print "Position: %f, %f: %f" % (pos.px, pos.py, pos.pa)
-
-        # Head towards the goal!
-    dist = math.sqrt(math.pow(g_x - pos.px, 2) + math.pow(g_y - pos.py, 2))
-    theta = math.atan2(g_y - pos.py, g_x - pos.px) - pos.pa
-    print 'Theta: %f: ' % theta
+    # Head towards the goal!
+    dist = math.sqrt(math.pow(goal.x - pos.px, 2) + math.pow(goal.y - pos.py, 2))
+    theta = math.atan2(goal.y - pos.py, goal.x - pos.px) - pos.pa
     
     total_factors = 0
     if (dist < g_r):
@@ -64,7 +53,6 @@ while(True):
         del_y = v * math.sin(theta)
         total_factors += 1
 
-#    points = []
     for i in range(0, ran.ranges_count):
         # figure out location of the obstacle...
         tao = (2 * math.pi * i) / ran.ranges_count
@@ -83,13 +71,6 @@ while(True):
         z_x = -1 * o_s * (o_e + o_r - dist) * math.cos(theta) 
         z_y = -1 * o_s * (o_e + o_r - dist) * math.sin(theta)
 
-#        points.append((obs_x, obs_y))
-#        points.append((obs_x + z_x, obs_y + z_y))
-
-#        if draw:
-#            gra.clear()
-#            gra.draw_multiline(points, ran.ranges_count * 2)
-
     # Now we have del_x and del_y, which describes the vetor along which the robot should move.
     if drive_type == "omni":
         del_x = del_x / total_factors
@@ -102,7 +83,6 @@ while(True):
         del_y += old_del_y
         del_x = del_x / total_factors
         del_y = del_y / total_factors
-        # Shit. x and rotational velocity.
 
         gra.clear()
         gra.draw_polyline([(0, 0), (del_x, del_y)], 2)
@@ -115,7 +95,6 @@ while(True):
         old_del_y = del_y
     else:
         print("Unrecognized drive type: ", drive_type)
-
 
 print("DONE!")
 

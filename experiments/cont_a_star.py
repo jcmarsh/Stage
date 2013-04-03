@@ -14,11 +14,12 @@ from generic_start import *
 client = startup(sys.argv, "find_target.cfg")
 pos, ran, gra = create_std(client)
 
+client.read()
+
 # figure out the location of the target (from the world file) in robot coords.
-robot_loc = search_pose("find_target.world", robot_name)
-offset = Point(robot_loc[0] + 8, robot_loc[1] + 8)
+offset = Point(pos.px + 8, pos.py + 8)
 target_loc = search_pose("find_target.world", "target0")
-goal = to_robot_coords(Point(robot_loc[0], robot_loc[1]), Point(target_loc[0], target_loc[1]))
+goal = Point(target_loc[0], target_loc[1])
 drive_type = search_text_property("gridcar.inc", "drive")
 g_r = 0 # radius of goal, in meters
 g_e = 3 # extent of field (greater than this, move at maximum speed)
@@ -27,8 +28,8 @@ o_r = .0 # radius of obstacles
 o_e = 2
 o_s = .5
 
-print 'Relative to ' + robot_name + ', the target is at: %.2f %.2f' % (goal.x, goal.y)
-draw = True
+print "The target is at: %.2f %.2f" % (goal.x, goal.y)
+print "The robot  is at: %.2f %.2f" % (pos.px, pos.py)
 
 speed = .2
 
@@ -69,6 +70,7 @@ def add_obstacle(x, y):
 while(True):
     idt = client.read()
 
+    print "The robot  is at: %.2f %.2f" % (pos.px, pos.py)
     del_x = 0
     del_y = 0 
 
