@@ -10,9 +10,7 @@ import math
 import sys
 import algs
 from playerc import *
-from graph_util import *
-from parse_world import *
-from generic_start import *
+from stage_utils import *
 
 client = startup(sys.argv, "find_target.cfg")
 pos, ran, gra = create_std(client)

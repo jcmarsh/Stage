@@ -5,8 +5,7 @@
 import math
 import sys
 from playerc import *
-from graph_util import *
-from generic_start import *
+from stage_utils import *
 
 # Create client object
 client = startup(sys.argv, "find_target.cfg")
