@@ -8,42 +8,11 @@ from playerc import *
 from parse_world import *
 from a_star import *
 from graph_util import *
-
-# Default port, can be overriden by cla
-port = 6665
-robot_name = "SAD (Because you didn't name me.)"
-# CLA should be the name of a robot in the cfg file
-if len(sys.argv) >= 2:
-    robot_name = sys.argv[1]
-    port = find_port_by_name("find_target.cfg", robot_name)
-
+from generic_start import *
 
 # Create client object
-client = playerc_client(None, 'localhost', port)
-
-# connect
-if client.connect() != 0:
-    raise playerc_error_str()
-
-# proxy for position2d:0
-pos = playerc_position2d(client, 0)
-if pos.subscribe(PLAYERC_OPEN_MODE) != 0:
-    raise playerc_error_str()
-
-# proxy for ranger:0
-ran = playerc_ranger(client, 0)
-if ran.subscribe(PLAYERC_OPEN_MODE) != 0:
-    raise playerc_error_str()
-
-# graphics, so I can see what is going on.
-gra = playerc_graphics2d(client, 0)
-if gra.subscribe(PLAYERC_OPEN_MODE) != 0:
-    raise playerc_error_str()
-
-# get the geometry
-if pos.get_geom() != 0:
-    raise playerc_error_str()
-print "Robot size: (%.3f,%.3f)" % (pos.size[0], pos.size[1])
+client = startup(sys.argv, "find_target.cfg")
+pos, ran, gra = create_std(client)
 
 # figure out the location of the target (from the world file) in robot coords.
 robot_loc = search_pose("find_target.world", robot_name)
