@@ -18,6 +18,7 @@ client.read()
 target_loc = search_pose("find_target.world", "target0")
 goal = Point(target_loc[0], target_loc[1])
 drive_type = search_text_property("gridcar.inc", "drive")
+offset = Point(8, 8)
 
 print "The target is at: %.2f %.2f" % (goal.x, goal.y)
 print "The robot  is at: %.2f %.2f" % (pos.px, pos.py)
@@ -26,11 +27,12 @@ speed = .2
 
 grid_num = 32
 
-grid = [[0 for x in range(grid_num)] for y in range(grid_num)]
+# TODO: This is horrible... for drawing purposes?
 path_map = [[False for x in range(grid_num)] for y in range(grid_num)]
-obstacles = [[False for x in range(grid_num)] for y in range(grid_num)]
 
 interval = 16.0 / grid_num
+
+planner = algs.a_star_planner(grid_num)
 
 def add_obstacle(x, y):
     # translate x and y to global coords
@@ -51,16 +53,10 @@ def add_obstacle(x, y):
     if y_g == grid_num:
         y_g = grid_num - 1 # Edge case
 
-    if x_g < grid_num and y_g < grid_num:
-        grid[x_g][y_g] = grid[x_g][y_g] + 0.3 # AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-        if grid[x_g][y_g] >= 1:
-            obstacles[x_g][y_g] = True
-    elif x_g > grid_num or y_g > grid_num:
-        print "ERROR! One of the grid indexes is greater than %d: %d, %d" % (grid_num, x_g, y_g) 
+    planner.add_obstacle(Point(x_g, y_g))
 
 while(True):
     idt = client.read()
-
 
     # check for obstacles, for a*
     for i in range(0, ran.ranges_count):
@@ -72,9 +68,9 @@ while(True):
         add_obstacle(obs_x, obs_y)
 
     # calculate possible path
-    current_node = node(int((pos.px + offset.x) / interval),  int((pos.py + offset.y) / interval), 0)
-    goal_node = node(int((goal.x + 1.0) / interval),  int((goal.y + 1.0) / interval), 0)
-    path = algs.a_star_A(current_node, goal_node, obstacles)
+    current_node = algs.node(int((pos.px + offset.x) / interval),  int((pos.py + offset.y) / interval), 0)
+    goal_node = algs.node(int((goal.x + offset.x) / interval),  int((goal.y + offset.y) / interval), 0)
+    path = planner.plan(current_node, goal_node)
 
     # clear old path
     for i in range(0, grid_num):
@@ -101,7 +97,7 @@ while(True):
     else:
         print("Unrecognized drive type: ", drive_type)
 
-    draw_all(gra, pos, offset, grid_num, grid, path_map)
+    draw_all(gra, pos, offset, grid_num, path_map) #grid, path_map)
 
 print("DONE!")
 

@@ -65,8 +65,8 @@ def draw_grid(gra, pos, offset, grid_num):
     gra.draw_multiline(points, (grid_num + 1) * 2 * 2)
 
 # Draw EVERYTHING! This is way too many args.
-def draw_all(gra, pos, offset, grid_num, grid, path):
+def draw_all(gra, pos, offset, grid_num, path): #grid, path):
     gra.clear()
     draw_grid(gra, pos, offset, grid_num)
-    draw_obstacles(gra, pos, offset, grid_num, grid)
+    #draw_obstacles(gra, pos, offset, grid_num, grid)
     draw_path(gra, pos, offset, grid_num, path)
