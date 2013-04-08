@@ -21,16 +21,21 @@ wav = playerc_planner(client, 1)
 if wav.subscribe(PLAYERC_OPEN_MODE) != 0:
     raise playerc_error_str()
 
-
 idt = client.read()
 
+target_loc = search_pose("find_target.world", "target0")
+goal = Point(target_loc[0], target_loc[1])
+
 wav.enable(1)
-wav.set_cmd_pose(5, 0, 1)
+wav.set_cmd_pose(goal.x, goal.y, 1)
 
 print "Pose: %f,%f" % (pos.px, pos.py)
 
+prev_points = []
 while True:
     idt = client.read()
+    
+    prev_points.append(draw_all(gra, pos, Point(0,0), None, None, None, prev_points))
 
 print("DONE!")
 

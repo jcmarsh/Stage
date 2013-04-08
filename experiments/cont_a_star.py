@@ -29,10 +29,9 @@ grid_num = 32
 
 # TODO: This is horrible... for drawing purposes?
 path_map = [[False for x in range(grid_num)] for y in range(grid_num)]
-
 interval = 16.0 / grid_num
-
 planner = algs.a_star_planner(grid_num)
+replan = True
 
 def add_obstacle(x, y):
     # translate x and y to global coords
@@ -53,8 +52,10 @@ def add_obstacle(x, y):
     if y_g == grid_num:
         y_g = grid_num - 1 # Edge case
 
-    planner.add_obstacle(Point(x_g, y_g))
+    return planner.add_obstacle(Point(x_g, y_g))
 
+prev_points = []
+path = []
 while(True):
     idt = client.read()
 
@@ -65,20 +66,26 @@ while(True):
         obs_x = ran.ranges[i] * math.cos(tao)
         obs_y = ran.ranges[i] * math.sin(tao)
         # obs_x and obs_y are relative to the robot, and I'm okay with that.
-        add_obstacle(obs_x, obs_y)
+        if add_obstacle(obs_x, obs_y):
+            replan = True
 
     # calculate possible path
-    current_node = algs.node(int((pos.px + offset.x) / interval),  int((pos.py + offset.y) / interval), 0)
-    goal_node = algs.node(int((goal.x + offset.x) / interval),  int((goal.y + offset.y) / interval), 0)
-    path = planner.plan(current_node, goal_node)
+    print "Plan: %s" % (replan)
+    if replan:
+        print "Replanning."
+        replan = False
+        current_node = algs.node(int((pos.px + offset.x) / interval),  int((pos.py + offset.y) / interval), 0)
+        goal_node = algs.node(int((goal.x + offset.x) / interval),  int((goal.y + offset.y) / interval), 0)
+        path = planner.plan(current_node, goal_node)
 
-    # clear old path
-    for i in range(0, grid_num):
-        for j in range(0, grid_num):
-            path_map[i][j] = False
-    for n in path:
-        path_map[n.x][n.y] = True
+        # clear old path
+        for i in range(0, grid_num):
+            for j in range(0, grid_num):
+                path_map[i][j] = False
+        for n in path:
+            path_map[n.x][n.y] = True
 
+    # Should check if goal_node has been reached.
     goal_node = path[len(path) - 2]
     waypoint = trans_point(pos, offset, Point(goal_node.x * interval + (interval / 2.0), goal_node.y * interval + (interval / 2.0)))
 
@@ -97,7 +104,7 @@ while(True):
     else:
         print("Unrecognized drive type: ", drive_type)
 
-    draw_all(gra, pos, offset, grid_num, path_map) #grid, path_map)
+    prev_points.append(draw_all(gra, pos, offset, grid_num, None, path_map, prev_points))
 
 print("DONE!")
 

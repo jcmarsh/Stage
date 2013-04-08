@@ -30,7 +30,13 @@ class a_star_planner:
         if loc.x < self.grid_num and loc.y < self.grid_num:
             self.obs_count[loc.x][loc.y] += 1
             if self.obs_count[loc.x][loc.y] >= self.obs_thres:
-                self.obstacles[loc.x][loc.y] = True
+                if not(self.obstacles[loc.x][loc.y]):
+                    self.obstacles[loc.x][loc.y] = True
+                    return True
+                else:
+                    return False
+            else:
+                return False
         else:
             print "ERROR! One of the grid indexes is greater than %d: %d, %d" % (self.grid_num, loc.x, loc.y) 
 

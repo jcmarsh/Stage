@@ -61,12 +61,25 @@ def draw_grid(gra, pos, offset, grid_num):
         points.append(_trans_point(pos, offset, Point(j * interval, 0)))
         points.append(_trans_point(pos, offset, Point(j * interval, 16)))
 
-    gra.clear()
     gra.draw_multiline(points, (grid_num + 1) * 2 * 2)
 
+def draw_ghosts(gra, pos, offset, ghosts):
+    points = []
+    for g in ghosts:
+        points.append(_trans_point(pos, Point(0, 0), g))
+    gra.draw_points(points, len(points))
+    return Point(pos.px, pos.py)
+
 # Draw EVERYTHING! This is way too many args.
-def draw_all(gra, pos, offset, grid_num, path): #grid, path):
+def draw_all(gra, pos, offset, grid_num, grid, path, ghosts):
     gra.clear()
-    draw_grid(gra, pos, offset, grid_num)
-    #draw_obstacles(gra, pos, offset, grid_num, grid)
-    draw_path(gra, pos, offset, grid_num, path)
+    if grid_num != None:
+        draw_grid(gra, pos, offset, grid_num)
+    if grid != None:
+        draw_obstacles(gra, pos, offset, grid_num, grid)
+    if path != None:
+        draw_path(gra, pos, offset, grid_num, path)
+    if ghosts != None:    
+        return draw_ghosts(gra, pos, offset, ghosts)
+    else:
+        return None
