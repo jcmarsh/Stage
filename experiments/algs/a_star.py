@@ -65,9 +65,9 @@ class a_star_planner:
         current = n
         path = []
         while not current.back_link is None:
-            path.append(current)
+            path.insert(0, current)
             current = current.back_link
-        path.append(current)
+        path.insert(0, current)
 
         return path
 

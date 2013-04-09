@@ -11,7 +11,7 @@ from stage_utils import *
 client = startup(sys.argv, "find_target.cfg")
 pos, ran, gra = create_std(client)
 
-# proxy for planner:0
+# proxy for vfh+ local navigator
 pla = playerc_planner(client, 0)
 if pla.subscribe(PLAYERC_OPEN_MODE) != 0:
     raise playerc_error_str()

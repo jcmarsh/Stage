@@ -25,7 +25,7 @@ print "The robot  is at: %.2f %.2f" % (pos.px, pos.py)
 
 speed = .2
 
-grid_num = 32
+grid_num = 16
 
 # TODO: This is horrible... for drawing purposes?
 path_map = [[False for x in range(grid_num)] for y in range(grid_num)]
@@ -70,6 +70,7 @@ while(True):
             replan = True
 
     # calculate possible path
+    # TODO: Replanning also needs to be done when a waypoint is reached.
     print "Plan: %s" % (replan)
     if replan:
         print "Replanning."
@@ -86,9 +87,11 @@ while(True):
             path_map[n.x][n.y] = True
 
     # Should check if goal_node has been reached.
+    # TODO: PATH IS NO LONGER REVERSED
     goal_node = path[len(path) - 2]
+    # TODO: Check if these should be global: The vfh assumes global
     waypoint = trans_point(pos, offset, Point(goal_node.x * interval + (interval / 2.0), goal_node.y * interval + (interval / 2.0)))
-
+    # TODO: Something is incorrect here.
     delta, total_factors = algs.potential(pos, ran, waypoint)
 
     if drive_type == "omni":

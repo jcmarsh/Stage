@@ -9,6 +9,10 @@ class Point:
         self.x = x
         self.y = y
 
+    def __eq__(self, o):
+        return o != None and o.x == self.x and o.y == self.y
+
+
 # TODO: Can likely get rid of this, or generalize
 def to_robot_coords(robot, target):
     return Point(target.x - robot.x, target.y - robot.y)
