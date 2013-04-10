@@ -16,13 +16,14 @@ if len(sys.argv) < 3:
     print_n_quit()
 
 config_name = sys.argv[1]
-file_name = sys.argv[2]
+map_name = sys.argv[2]
 
-if path.splitext(config_name)[1] != ".cfg" or path.splitext(file_name)[1] != ".png":
+if path.splitext(config_name)[1] != ".cfg" or path.splitext(map_name)[1] != ".png":
     print_n_quit()
 
-print "Provided filename: ", file_name
+print "Provided filename: ", map_name
 
+# Use the provided map name in floor.inc, which is included by the world file
 f = open("floor.inc", "w")
 
 f.write("# floor.inc\n")
@@ -33,14 +34,33 @@ f.write("(\n")
 f.write("\tname \"grid\"\n")
 f.write("\tsize [16 16 .8]\n")
 f.write("\tpose [0 0 0 0]\n")
-f.write("\tbitmap \"" + file_name + "\"\n")
+f.write("\tbitmap \"" + map_name + "\"\n")
 
 f.write(")\n\n")
 
 f.close()
 
-print "Ready to run config file: ", config_name
+# Add a map driver to a new .cfg that uses the provided map name
 
-call(["player", config_name])
+print "Ready to process config file: ", config_name
+
+new_cfg_name = "run_temp_" + config_name
+new_cfg = open(new_cfg_name, "w")
+old_cfg = open(config_name, "r")
+for line in old_cfg:
+    new_cfg.write(line)
+old_cfg.close()
+
+new_cfg.write("\n\n")
+new_cfg.write("# Added by run_player.cfg\n")
+new_cfg.write("driver\n(")
+new_cfg.write("\tname \"mapfile\"\n")
+new_cfg.write("\tprovides [\"localhost:6665:map:0\"]\n")
+new_cfg.write("\tfilename \"" + map_name + "\"\n")
+new_cfg.write("\tresolution .032\n")
+new_cfg.write(")\n\n")
+new_cfg.close()
+
+call(["player", new_cfg_name])
 
 print "Complete"
