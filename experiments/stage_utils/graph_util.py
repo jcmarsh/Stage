@@ -12,10 +12,16 @@ class Point:
     def __eq__(self, o):
         return o != None and o.x == self.x and o.y == self.y
 
-
 # TODO: Can likely get rid of this, or generalize
 def to_robot_coords(robot, target):
     return Point(target.x - robot.x, target.y - robot.y)
+
+# robot coordinates to global cordinates
+def trans_point_r_g(pos, point):
+    t = pos.pa
+    x0 = point.x * math.cos(t) - point.y * math.sin(t)
+    y0 = point.x * math.sin(t) + point.y * math.cos(t)
+    return Point(x0 + pos.px, y0 + pos.py)
 
 # global coordinates to robot cordinates
 def trans_point(pos, offset, point):
@@ -41,16 +47,14 @@ def draw_obstacles(gra, pos, offset, grid_num, grid):
                 gra.draw_points([_trans_point(pos, offset, Point(i * interval + (interval / 2.0), j * interval + (interval / 2.0)))], 1)
 
 # Draw the planned path
-def draw_path(gra, pos, offset, grid_num, path):
-    interval = 16.0 / grid_num
-    for i in range(0, grid_num):
-        for j in range(0, grid_num):
-            if path[i][j]:
-                gra.draw_points([_trans_point(pos, offset, Point(i * interval + (interval / 2.0), j * interval + (interval / 2.0)))], 1)
-                gra.draw_points([_trans_point(pos, offset, Point(i * interval + (interval / 2.0) - .1, j * interval + (interval / 2.0) - .1))], 1)
-                gra.draw_points([_trans_point(pos, offset, Point(i * interval + (interval / 2.0) + .1, j * interval + (interval / 2.0) + .1))], 1)
-                gra.draw_points([_trans_point(pos, offset, Point(i * interval + (interval / 2.0) - .1, j * interval + (interval / 2.0) + .1))], 1)
-                gra.draw_points([_trans_point(pos, offset, Point(i * interval + (interval / 2.0) + .1, j * interval + (interval / 2.0) - .1))], 1)
+def draw_path(gra, pos, waypoints):
+    offset = Point(0,0)
+    for w in waypoints:
+        gra.draw_points([_trans_point(pos, offset, w)], 1)
+        gra.draw_points([_trans_point(pos, offset, Point(w.x - .1, w.y - .1))], 1)
+        gra.draw_points([_trans_point(pos, offset, Point(w.x - .1, w.y + .1))], 1)
+        gra.draw_points([_trans_point(pos, offset, Point(w.x + .1, w.y - .1))], 1)
+        gra.draw_points([_trans_point(pos, offset, Point(w.x + .1, w.y + .1))], 1)
 
 # Draw the grid
 def draw_grid(gra, pos, offset, grid_num):
@@ -82,7 +86,7 @@ def draw_all(gra, pos, offset, grid_num, grid, path, ghosts):
     if grid != None:
         draw_obstacles(gra, pos, offset, grid_num, grid)
     if path != None:
-        draw_path(gra, pos, offset, grid_num, path)
+        draw_path(gra, pos, path)
     if ghosts != None:    
         return draw_ghosts(gra, pos, offset, ghosts)
     else:

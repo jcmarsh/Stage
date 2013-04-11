@@ -23,39 +23,20 @@ offset = Point(8, 8)
 print "The target is at: %.2f %.2f" % (goal.x, goal.y)
 print "The robot  is at: %.2f %.2f" % (pos.px, pos.py)
 
-speed = .2
+speed = 1
 
 grid_num = 16
 
-# TODO: This is horrible... for drawing purposes?
-path_map = [[False for x in range(grid_num)] for y in range(grid_num)]
 interval = 16.0 / grid_num
-planner = algs.a_star_planner(grid_num)
+planner = algs.a_star_planner(grid_num, offset)
 replan = True
 
 def add_obstacle(x, y):
-    # translate x and y to global coords
-    t = pos.pa
-
-    x0 = x * math.cos(t) - y * math.sin(t)
-    y0 = x * math.sin(t) + y * math.cos(t)
-    
-    xp = x0 + pos.px + offset.x
-    yp = y0 + pos.py + offset.y
-
-    # Gridify
-    x_g = int(xp / interval)
-    y_g = int(yp / interval)
-
-    if x_g == grid_num:
-        x_g = grid_num - 1 # Edge case
-    if y_g == grid_num:
-        y_g = grid_num - 1 # Edge case
-
-    return planner.add_obstacle(Point(x_g, y_g))
+    return planner.add_obstacle(trans_point_r_g(pos, Point(x, y)))
 
 prev_points = []
 path = []
+waypoint = Point(0,0)
 while(True):
     idt = client.read()
 
@@ -69,45 +50,37 @@ while(True):
         if add_obstacle(obs_x, obs_y):
             replan = True
 
-    # calculate possible path
+    # Reached waypoint?
+    if algs.gridify(Point(pos.px, pos.py), grid_num, offset) == algs.gridify(waypoint, grid_num, offset):
+        replan = True
+
     # TODO: Replanning also needs to be done when a waypoint is reached.
     print "Plan: %s" % (replan)
     if replan:
         print "Replanning."
         replan = False
-        current_node = algs.node(int((pos.px + offset.x) / interval),  int((pos.py + offset.y) / interval), 0)
-        goal_node = algs.node(int((goal.x + offset.x) / interval),  int((goal.y + offset.y) / interval), 0)
-        path = planner.plan(current_node, goal_node)
-
-        # clear old path
-        for i in range(0, grid_num):
-            for j in range(0, grid_num):
-                path_map[i][j] = False
-        for n in path:
-            path_map[n.x][n.y] = True
+        path = planner.plan(Point(pos.px, pos.py), goal)
 
     # Should check if goal_node has been reached.
-    # TODO: PATH IS NO LONGER REVERSED
-    goal_node = path[len(path) - 2]
-    # TODO: Check if these should be global: The vfh assumes global
-    waypoint = trans_point(pos, offset, Point(goal_node.x * interval + (interval / 2.0), goal_node.y * interval + (interval / 2.0)))
+    waypoint = path[1]
+
     # TODO: Something is incorrect here.
     delta, total_factors = algs.potential(pos, ran, waypoint)
+
+    delta.x = delta.x / total_factors
+    delta.y = delta.y / total_factors
 
     if drive_type == "omni":
         pos.set_cmd_vel(speed * delta.x, speed * delta.y, 0, 1)
     elif drive_type == "diff":        
         rot_vel = speed * math.atan2(delta.y, delta.x)
-        if math.fabs(rot_vel) > (math.pi / 2.0):
-            vel = 0
-        else:
-            vel = speed * math.sqrt(math.pow(delta.x, 2) + math.pow(delta.y, 2))
+        vel = speed * math.sqrt(math.pow(delta.x, 2) + math.pow(delta.y, 2))
         
         pos.set_cmd_vel(vel, 0.0, rot_vel, 1)
     else:
         print("Unrecognized drive type: ", drive_type)
 
-    prev_points.append(draw_all(gra, pos, offset, grid_num, None, path_map, prev_points))
+    prev_points.append(draw_all(gra, pos, offset, grid_num, None, path, prev_points))
 
 print("DONE!")
 

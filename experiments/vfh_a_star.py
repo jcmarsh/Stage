@@ -32,42 +32,13 @@ speed = .2
 
 grid_num = 32
 
-# TODO: This is horrible... for drawing purposes?
-path_map = [[False for x in range(grid_num)] for y in range(grid_num)]
 interval = 16.0 / grid_num
-planner = algs.a_star_planner(grid_num)
+planner = algs.a_star_planner(grid_num, offset)
 replan = True
-
-def gridify(a):
-    b = Point(0,0)
-    b.x = int((a.x + offset.x) / interval)
-    b.y = int((a.y + offset.y) / interval)
-    if b.x == grid_num:
-        b.x = grid_num - 1 # Edge case
-    if b.y == grid_num:
-        b.y = grid_num - 1 # Edge case
-    return b
-
-def degridify(a):
-    b = Point(0,0)
-    b.x = a.x * interval + (interval / 2.0) - offset.x
-    b.y = a.y * interval + (interval / 2.0) - offset.y
-    return b
 
 def add_obstacle(x, y):
     # translate x and y to global coords
-    t = pos.pa
-
-    x0 = x * math.cos(t) - y * math.sin(t)
-    y0 = x * math.sin(t) + y * math.cos(t)
-    
-    xp = x0 + pos.px
-    yp = y0 + pos.py
-
-    # Gridify
-    obs_loc = gridify(Point(xp, yp))
-
-    return planner.add_obstacle(obs_loc)
+    return planner.add_obstacle(trans_point_r_g(pos, Point(x, y)))
 
 prev_points = []
 path = []
@@ -85,40 +56,26 @@ while(True):
         if add_obstacle(obs_x, obs_y):
             replan = True
 
-    # calculate possible path
-    #position = gridify(Point(pos.px, pos.py))
-    #waypoint = gridify(c_waypoint)
-    #print "G. Position: %d,%d\tG. Waypoint: %d,%d" % (position.x, position.y, waypoint.x, waypoint.y)
-    if gridify(Point(pos.px, pos.py)) == gridify(c_waypoint):
-        print "HAHAHAHAHAHAHAHA"
+    # reached waypoint?
+    if algs.gridify(Point(pos.px, pos.py), grid_num, offset) == algs.gridify(c_waypoint, grid_num, offset):
         replan = True
 
     print "Plan: %s" % (replan)
     if replan:
         print "Replanning."
         replan = False
-        current_node = algs.node(int((pos.px + offset.x) / interval),  int((pos.py + offset.y) / interval), 0)
-        goal_node = algs.node(int((goal.x + offset.x) / interval),  int((goal.y + offset.y) / interval), 0)
-        path = planner.plan(current_node, goal_node)
-
-        # clear old path
-        for i in range(0, grid_num):
-            for j in range(0, grid_num):
-                path_map[i][j] = False
-        for n in path:
-            path_map[n.x][n.y] = True
+        path = planner.plan(Point(pos.px, pos.py), goal)
 
     # Should check if goal_node has been reached.
-    c_waypoint = degridify(path[1])
-    n_waypoint = degridify(path[2])
+    c_waypoint = path[1]
+    n_waypoint = path[2]
 
     theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
     #print "Target pose: %f,%f:%f" % (c_waypoint.x, c_waypoint.y, theta)
 
     pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
-    # pla.set_cmd_pose(-4, -4, -3)
 
-    prev_points.append(draw_all(gra, pos, offset, grid_num, None, path_map, prev_points))
+    prev_points.append(draw_all(gra, pos, offset, grid_num, None, path, prev_points))
 
 print("DONE!")
 

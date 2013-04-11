@@ -7,3 +7,4 @@ config.h
 .DS_Store
 docsrc/stage
 experiments/floor.inc
+run_temp*

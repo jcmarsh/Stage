@@ -1,5 +1,8 @@
 import heapq
 import math
+from stage_utils import Point
+
+map_size = 16.0
 
 class node:
     def __init__(self, x, y, cost_to):
@@ -13,9 +16,28 @@ class node:
     def __eq__(self, o):
         return o != None and o.x == self.x and o.y == self.y
 
+def gridify(a, grid_num, offset):
+    interval = map_size / grid_num
+    b = Point(0,0)
+    b.x = int((a.x + offset.x) / interval)
+    b.y = int((a.y + offset.y) / interval)
+    if b.x == grid_num:
+        b.x = grid_num - 1 # Edge case
+    if b.y == grid_num:
+        b.y = grid_num - 1 # Edge case
+    return b
+
+def degridify(a, offset, grid_num):
+    interval = map_size / grid_num
+    b = Point(0,0)
+    b.x = a.x * interval + (interval / 2.0) - offset.x
+    b.y = a.y * interval + (interval / 2.0) - offset.y
+    return b
+
 class a_star_planner:
-    def __init__(self, num):
+    def __init__(self, num, offset):
         self.grid_num = num
+        self.offset = offset
         self.obs_thres = 3
         self.obstacles = [[False for x in range(self.grid_num)] for y in range(self.grid_num)]
         self.obs_count = [[0 for x in range(self.grid_num)] for y in range(self.grid_num)]
@@ -27,18 +49,19 @@ class a_star_planner:
         return dist
 
     def add_obstacle(self, loc):
-        if loc.x < self.grid_num and loc.y < self.grid_num:
-            self.obs_count[loc.x][loc.y] += 1
-            if self.obs_count[loc.x][loc.y] >= self.obs_thres:
-                if not(self.obstacles[loc.x][loc.y]):
-                    self.obstacles[loc.x][loc.y] = True
+        obs = gridify(loc, self.grid_num, self.offset)
+        if obs.x < self.grid_num and obs.y < self.grid_num:
+            self.obs_count[obs.x][obs.y] += 1
+            if self.obs_count[obs.x][obs.y] >= self.obs_thres:
+                if not(self.obstacles[obs.x][obs.y]):
+                    self.obstacles[obs.x][obs.y] = True
                     return True
                 else:
                     return False
             else:
                 return False
         else:
-            print "ERROR! One of the grid indexes is greater than %d: %d, %d" % (self.grid_num, loc.x, loc.y) 
+            print "ERROR! One of the grid indexes is greater than %d: %d, %d" % (self.grid_num, obs.x, obs.y) 
 
     # Hmm......
     def _gen_neighbors(self, n):
@@ -65,14 +88,18 @@ class a_star_planner:
         current = n
         path = []
         while not current.back_link is None:
-            path.insert(0, current)
+            path.insert(0, degridify(current, self.offset, self.grid_num))
             current = current.back_link
-        path.insert(0, current)
+        path.insert(0, degridify(current, self.offset, self.grid_num))
 
         return path
 
     # Modeled from the Wikipedia page.
-    def plan(self, start, goal):
+    def plan(self, start_p, goal_p):
+        s_g = gridify(start_p, self.grid_num, self.offset)
+        g_g = gridify(goal_p, self.grid_num, self.offset)
+        start = node(s_g.x, s_g.y, 0)
+        goal = node(g_g.x, g_g.y, 0)
         closed_set = []
         open_set = [] # heap ordered by estimated cost
         heapq.heappush(open_set, (0 + self._est_dist(start, goal), start))
