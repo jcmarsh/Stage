@@ -44,9 +44,7 @@ f.close()
 
 # Copy the world file to a temporary run file (so that the controller know the name)
 new_world_name = "run_temp.world"
-#new_world = open(new_world_name, "w")
 old_world_name = path.splitext(config_name)[0] + ".world"
-#old_world = open(old_world_name, "r")
 
 shutil.copyfile(old_world_name, new_world_name)
 
