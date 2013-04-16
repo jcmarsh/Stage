@@ -14,12 +14,12 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // The class for the driver
-class ArtPot_Driver : public ThreadedDriver
+class ArtPotDriver : public ThreadedDriver
 {
   public:
     
     // Constructor; need that
-    ArtPot_Driver(ConfigFile* cf, int section);
+    ArtPotDriver(ConfigFile* cf, int section);
 
     // This method will be invoked on each incoming message
     virtual int ProcessMessage(QueuePointer &resp_queue, 
@@ -41,25 +41,25 @@ class ArtPot_Driver : public ThreadedDriver
 // declare it static in the class).  In this function, we create and return
 // (as a generic Driver*) a pointer to a new instance of this driver.
 Driver* 
-ExampleDriver_Init(ConfigFile* cf, int section)
+ArtPotDriver_Init(ConfigFile* cf, int section)
 {
   // Create and return a new instance of this driver
-  return((Driver*)(new ExampleDriver(cf, section)));
+  return((Driver*)(new ArtPotDriver(cf, section)));
 }
 
 // A driver registration function, again declared outside of the class so
 // that it can be invoked without object context.  In this function, we add
 // the driver into the given driver table, indicating which interface the
 // driver can support and how to create a driver instance.
-void ExampleDriver_Register(DriverTable* table)
+void ArtPotDriver_Register(DriverTable* table)
 {
-  table->AddDriver("exampledriver", ExampleDriver_Init);
+  table->AddDriver("artpotdriver", ArtPotDriver_Init);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constructor.  Retrieve options from the configuration file and do any
 // pre-Setup() setup.
-ExampleDriver::ExampleDriver(ConfigFile* cf, int section)
+ArtPotDriver::ArtPotDriver(ConfigFile* cf, int section)
     : ThreadedDriver(cf, section, false, PLAYER_MSGQUEUE_DEFAULT_MAXLEN, 
              PLAYER_POSITION2D_CODE)
 {
@@ -71,16 +71,16 @@ ExampleDriver::ExampleDriver(ConfigFile* cf, int section)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Set up the device.  Return 0 if things go well, and -1 otherwise.
-int ExampleDriver::MainSetup()
+int ArtPotDriver::MainSetup()
 {   
-  puts("Example driver initialising");
+  puts("Artificial Potential driver initialising");
 
   // Here you do whatever is necessary to setup the device, like open and
   // configure a serial port.
 
   printf("Was foo option given in config file? %d\n", this->foop);
     
-  puts("Example driver ready");
+  puts("Artificial Potential driver ready");
 
   return(0);
 }
@@ -88,17 +88,17 @@ int ExampleDriver::MainSetup()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shutdown the device
-void ExampleDriver::MainQuit()
+void ArtPotDriver::MainQuit()
 {
-  puts("Shutting example driver down");
+  puts("Shutting Artificial Potential driver down");
 
   // Here you would shut the device down by, for example, closing a
   // serial port.
 
-  puts("Example driver has been shutdown");
+  puts("Artificial Potential driver has been shutdown");
 }
 
-int ExampleDriver::ProcessMessage(QueuePointer & resp_queue, 
+int ArtPotDriver::ProcessMessage(QueuePointer & resp_queue, 
                                   player_msghdr * hdr,
                                   void * data)
 {
@@ -112,7 +112,7 @@ int ExampleDriver::ProcessMessage(QueuePointer & resp_queue,
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main function for device thread
-void ExampleDriver::Main() 
+void ArtPotDriver::Main() 
 {
   // The main loop; interact with the device here
   for(;;)
@@ -139,9 +139,9 @@ void ExampleDriver::Main()
 extern "C" {
   int player_driver_init(DriverTable* table)
   {
-    puts("Example driver initializing");
-    ExampleDriver_Register(table);
-    puts("Example driver done");
+    puts("Artificial Potential driver initializing");
+    ArtPotDriver_Register(table);
+    puts("Artificial Potential driver done");
     return(0);
   }
 }
