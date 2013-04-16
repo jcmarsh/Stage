@@ -3,8 +3,10 @@
 # Author James Marshall
 
 # The first arg should be the file name of the player config file
+# The config and world files are assumed to have the same name, except the extension.
 # The second arg should be the file name of the picture file to use as the floor plan for player.
 import sys
+import shutil
 from subprocess import call
 from os import path
 
@@ -40,11 +42,18 @@ f.write(")\n\n")
 
 f.close()
 
-# Add a map driver to a new .cfg that uses the provided map name
+# Copy the world file to a temporary run file (so that the controller know the name)
+new_world_name = "run_temp.world"
+#new_world = open(new_world_name, "w")
+old_world_name = path.splitext(config_name)[0] + ".world"
+#old_world = open(old_world_name, "r")
 
+shutil.copyfile(old_world_name, new_world_name)
+
+# Add a map driver to a new .cfg that uses the provided map name
 print "Ready to process config file: ", config_name
 
-new_cfg_name = "run_temp_" + config_name
+new_cfg_name = "run_temp.cfg"  #_" + config_name
 new_cfg = open(new_cfg_name, "w")
 old_cfg = open(config_name, "r")
 for line in old_cfg:

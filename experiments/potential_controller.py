@@ -12,11 +12,11 @@ import algs
 from playerc import *
 from stage_utils import *
 
-client = startup(sys.argv, "find_target.cfg")
+client = startup(sys.argv, "run_temp.cfg")
 pos, ran, gra = create_std(client)
 
 # figure out the location of the target (from the world file)
-target_loc = search_pose("find_target.world", "target0")
+target_loc = search_pose("run_temp.world", "target0")
 goal = Point(target_loc[0], target_loc[1])
 
 while(True):

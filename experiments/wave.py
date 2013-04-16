@@ -8,7 +8,7 @@ from playerc import *
 from stage_utils import *
 
 # Create client object
-client = startup(sys.argv, "find_target.cfg")
+client = startup(sys.argv, "run_temp.cfg")
 pos, ran, gra = create_std(client)
 
 # proxy for vfh+ local navigator
@@ -23,7 +23,7 @@ if wav.subscribe(PLAYERC_OPEN_MODE) != 0:
 
 idt = client.read()
 
-target_loc = search_pose("find_target.world", "target0")
+target_loc = search_pose("run_temp.world", "target0")
 goal = Point(target_loc[0], target_loc[1])
 
 wav.enable(1)
