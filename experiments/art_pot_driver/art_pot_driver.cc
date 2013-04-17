@@ -109,12 +109,54 @@ void ArtPotDriver_Register(DriverTable* table)
 // Constructor.  Retrieve options from the configuration file and do any
 // pre-Setup() setup.
 ArtPotDriver::ArtPotDriver(ConfigFile* cf, int section)
-    : ThreadedDriver(cf, section, false, PLAYER_MSGQUEUE_DEFAULT_MAXLEN, 
-             PLAYER_POSITION2D_CODE)
+  : ThreadedDriver(cf, section)
 {
+  // Check for planner (we provide)
+  memset(&(this->planner_id), 0, sizeof(player_devaddr_t));
+  memset(&(this->planner_data), 0, sizeof(player_planner_data_t));
+  if (cf->ReadDeviceAddr(&(this->planner_id), section, "provides",
+			 PLAYER_PLANNER_CODE, -1, NULL) == 0) {
+    planner = true;
+    if (this->AddInterface(this->planner_id) != 0) {
+      this->SetError(-1);
+      return;
+    }
+    // Init planner data
+
+  }
+  
+  // Check for position2d (we provide)
+  memset(&(this->position_id), 0, sizeof(player_devaddr_t));
+  if (cf->ReadDeviceAddr(&(this->position_id), section, "provides",
+			 PLAYER_POSITION2D_CODE, -1, NULL) == 0) {
+    if (this->AddInterface(this->position_id) != 0) {
+      this->SetError(-1);
+      return;
+    }
+  }
+
+  // Check for position2d (we require)
+  this->odom = NULL;
+  // TODO: No memset for the odom? -jcm
+  if (cf->ReadDeviceAddr(&(this->odom_addr), section, "requires",
+			 PLAYER_POSITION2D_CODE, -1, NULL) != 0) {
+    PLAYER_ERROR("Could not find required position2d device!");
+    this->SetError(-1);
+    return;
+  }
+
+  this->laser = NULL;
+  memset(&(this->laser_addr), 0, sizeof(player_devaddr_t));
+  if (cf->ReadDeviceAddr(&(this->laser_addr), section, "requires",
+			 PLAYER_LASER_CODE, -1, NULL) != 0) {
+    PLAYER_ERROR("Could not find required laser device!");
+    this->SetError(-1);
+    return;
+  }
+
   // Read an option from the configuration file
   this->foop = cf->ReadInt(section, "foo", 0);
-
+			 
   return;
 }
 

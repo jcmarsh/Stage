@@ -3,12 +3,14 @@
 # Author James Marshall
 
 # The first arg should be the file name of the player config file
-# The config and world files are assumed to have the same name, except the extension.
+# The world files name is read from the config file
 # The second arg should be the file name of the picture file to use as the floor plan for player.
 import sys
 import shutil
 from subprocess import call
 from os import path
+# needed to parse the name of the worldfile from the config file
+from stage_utils import *
 
 def print_n_quit():
     print 'usage: python run_player.py [name_of_config.cfg] [name_of_map.png]'
@@ -42,9 +44,9 @@ f.write(")\n\n")
 
 f.close()
 
-# Copy the world file to a temporary run file (so that the controller know the name)
+# Copy the world file to a temporary run file (so that the controller knows the name)
 new_world_name = "run_temp.world"
-old_world_name = path.splitext(config_name)[0] + ".world"
+old_world_name = search_text_property(config_name, "worldfile")
 
 shutil.copyfile(old_world_name, new_world_name)
 
