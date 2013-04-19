@@ -33,7 +33,8 @@ private:
   virtual int MainSetup();
   virtual void MainQuit();
   
-  int foop; // TODO: Remove? -jcm
+  double goal_radius, goal_extent, goal_scale;
+  double obstacle_radius, obstacle_extent, obstacle_scale;
 
   // Set up the underlying odometry device
   int SetupOdom();
@@ -72,7 +73,7 @@ private:
   Device *laser;
   player_devaddr_t laser_addr;
   int laser_count;
-  double laser_ranges[361][2];
+  double laser_ranges[361];
 
   // Control velocity
   double con_vel[3];
@@ -80,7 +81,7 @@ private:
   // Should have your art_pot specific code here...
   int speed, turnrate;
   bool active_goal;
-  int32_t goal_x, goal_y, goal_t;
+  double goal_x, goal_y, goal_t;
   int cmd_state, cmd_type;
 
 };
@@ -155,7 +156,12 @@ ArtPotDriver::ArtPotDriver(ConfigFile* cf, int section)
   }
 
   // Read an option from the configuration file
-  this->foop = cf->ReadInt(section, "foo", 0);
+  this->goal_radius = cf->ReadFloat(section, "goal_radius", .1);
+  this->goal_extent = cf->ReadFloat(section, "goal_extent", 2);
+  this->goal_scale = cf->ReadFloat(section, "goal_scale", .5);
+  this->obstacle_radius = cf->ReadFloat(section, "obstacle_radius", .0);
+  this->obstacle_extent = cf->ReadFloat(section, "obstacle_extent", 1.5);
+  this->obstacle_scale = cf->ReadFloat(section, "obstacle_scale", .2);
 			 
   return;
 }
@@ -177,8 +183,6 @@ int ArtPotDriver::MainSetup()
   if (this->laser_addr.interf && this->SetupLaser() != 0)
     return -1;
 
-  printf("Was foo option given in config file? %d\n", this->foop);
-    
   puts("Artificial Potential driver ready");
 
   return(0);
@@ -281,6 +285,8 @@ int ArtPotDriver::ProcessMessage(QueuePointer & resp_queue,
 // Main function for device thread
 void ArtPotDriver::Main() 
 {
+  double dist, theta, delta_x, delta_y, v, tao, obs_x, obs_y;
+  int total_factors, i;
   // The main loop; interact with the device here
   for(;;)
   {
@@ -288,6 +294,48 @@ void ArtPotDriver::Main()
     pthread_testcancel();
 
     ProcessMessages();
+
+    // FROM PYTHON CONTROLLER
+    // Head towards the goal! odom_pose: 0-x, 1-y, 2-theta
+    dist = sqrt(pow(goal_x - odom_pose[0], 2)  + pow(goal_y - odom_pose[1], 2));
+    theta = atan2(goal_y - odom_pose[1], goal_x - odom_pose[0]) - odom_pose[2];
+
+    total_factors = 0;
+    if (dist < goal_radius) {
+      v = 0;
+      delta_x = 0;
+      delta_y = 0;
+    } else if (goal_radius <= dist and dist <= goal_extent + goal_radius) {
+      v = goal_scale * (dist - goal_radius);
+      delta_x = v * cos(theta);
+      delta_y = v * sin(theta);
+      total_factors += 1;
+    } else {
+      v = goal_scale * goal_extent;
+      delta_x = v * cos(theta);
+      delta_y = v * sin(theta);
+      total_factors += 1;
+    }
+
+    for (i = 1; i < laser_count; i++) {
+      // figure out location of the obstacle...
+      tao = (2 * M_PI * i) / laser_count;
+      obs_x = laser_ranges[i] * cos(tao);
+      obs_y = laser_ranges[i] * sin(tao);
+      // obs.x and obs.y are relative to the robot, and I'm okay with that.
+        
+      dist = sqrt(pow(obs_x, 2) + pow(obs_y, 2));
+      theta = atan2(obs_y, obs_x);
+
+      if (dist <= obstacle_extent + obstacle_radius) {
+	delta_x += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * cos(theta);
+	delta_y += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * sin(theta);
+	total_factors += 1;
+      }
+    }
+      
+      
+    printf("Delta: (%f,%f)\t Factors: %d\n", delta_x, delta_y, total_factors);
 
     // Interact with the device, and push out the resulting data, using
     // Driver::Publish()
@@ -413,17 +461,11 @@ void ArtPotDriver::ProcessOdom(player_msghdr_t* hdr, player_position2d_data_t &d
 void ArtPotDriver::ProcessLaser(player_laser_data_t &data)
 {
   int i;
-  double b, db, r;
   
-  b = RTOD(data.min_angle);
-  db = RTOD(data.resolution);
-  
-  this->laser_count = 361;
-
-  for (i = 0; i < laser_count; i++)
-    this->laser_ranges[i][0] = -1;
-
-  PLAYER_ERROR("JAMES! Fix this crap!"); // TODO: Seriously. Not playing around -jcm
+  laser_count = data.ranges_count;
+  for (i = 0; i < data.ranges_count; i++) {
+    laser_ranges[i] = data.ranges[i];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
