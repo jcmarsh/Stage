@@ -33,6 +33,7 @@ private:
   virtual int MainSetup();
   virtual void MainQuit();
   
+  double max_speed;
   double goal_radius, goal_extent, goal_scale;
   double obstacle_radius, obstacle_extent, obstacle_scale;
 
@@ -46,8 +47,9 @@ private:
   int ShutdownLaser();
   void ProcessLaser(player_laser_data_t &);
   
+  void DoOneUpdate();
   // Commands for the position device
-  void PutCommand( int speed, int turnrate );
+  void PutCommand( double speed, double turnrate );
 
   // Check for new commands
   void ProcessCommand(player_msghdr_t* hdr, player_position2d_cmd_pos_t &);
@@ -156,6 +158,7 @@ ArtPotDriver::ArtPotDriver(ConfigFile* cf, int section)
   }
 
   // Read an option from the configuration file
+  this->max_speed = cf->ReadFloat(section, "max_speed", 4);
   this->goal_radius = cf->ReadFloat(section, "goal_radius", .1);
   this->goal_extent = cf->ReadFloat(section, "goal_extent", 2);
   this->goal_scale = cf->ReadFloat(section, "goal_scale", .5);
@@ -170,7 +173,6 @@ ArtPotDriver::ArtPotDriver(ConfigFile* cf, int section)
 // Set up the device.  Return 0 if things go well, and -1 otherwise.
 int ArtPotDriver::MainSetup()
 {   
-  printf("HELLLLOOOOOOO!!!!!!!!!!!");
   puts("Artificial Potential driver initialising");
   this->active_goal = false;
   this->goal_x = this->goal_y = this->goal_t = 0;
@@ -285,66 +287,79 @@ int ArtPotDriver::ProcessMessage(QueuePointer & resp_queue,
 // Main function for device thread
 void ArtPotDriver::Main() 
 {
-  double dist, theta, delta_x, delta_y, v, tao, obs_x, obs_y;
-  int total_factors, i;
   // The main loop; interact with the device here
   for(;;)
   {
     // test if we are supposed to cancel
+    this->Wait();
     pthread_testcancel();
-
-    ProcessMessages();
-
-    // FROM PYTHON CONTROLLER
-    // Head towards the goal! odom_pose: 0-x, 1-y, 2-theta
-    dist = sqrt(pow(goal_x - odom_pose[0], 2)  + pow(goal_y - odom_pose[1], 2));
-    theta = atan2(goal_y - odom_pose[1], goal_x - odom_pose[0]) - odom_pose[2];
-
-    total_factors = 0;
-    if (dist < goal_radius) {
-      v = 0;
-      delta_x = 0;
-      delta_y = 0;
-    } else if (goal_radius <= dist and dist <= goal_extent + goal_radius) {
-      v = goal_scale * (dist - goal_radius);
-      delta_x = v * cos(theta);
-      delta_y = v * sin(theta);
-      total_factors += 1;
-    } else {
-      v = goal_scale * goal_extent;
-      delta_x = v * cos(theta);
-      delta_y = v * sin(theta);
-      total_factors += 1;
-    }
-
-    for (i = 1; i < laser_count; i++) {
-      // figure out location of the obstacle...
-      tao = (2 * M_PI * i) / laser_count;
-      obs_x = laser_ranges[i] * cos(tao);
-      obs_y = laser_ranges[i] * sin(tao);
-      // obs.x and obs.y are relative to the robot, and I'm okay with that.
-        
-      dist = sqrt(pow(obs_x, 2) + pow(obs_y, 2));
-      theta = atan2(obs_y, obs_x);
-
-      if (dist <= obstacle_extent + obstacle_radius) {
-	delta_x += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * cos(theta);
-	delta_y += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * sin(theta);
-	total_factors += 1;
-      }
-    }
-      
-      
-    printf("Delta: (%f,%f)\t Factors: %d\n", delta_x, delta_y, total_factors);
-
-    // Interact with the device, and push out the resulting data, using
-    // Driver::Publish()
-
+    this->DoOneUpdate();
     // Sleep (you might, for example, block on a read() instead)
-    usleep(100000);
+    //usleep(100000);
+
   }
 }
 
+void ArtPotDriver::DoOneUpdate() {
+  double dist, theta, delta_x, delta_y, v, tao, obs_x, obs_y, vel, rot_vel;
+  int total_factors, i;
+
+  if (this->InQueue->Empty()) {
+    return;
+  }
+
+  this->ProcessMessages();
+
+  if (!this->active_goal) {
+    return;
+  }
+
+  // Head towards the goal! odom_pose: 0-x, 1-y, 2-theta
+  dist = sqrt(pow(goal_x - odom_pose[0], 2)  + pow(goal_y - odom_pose[1], 2));
+  theta = atan2(goal_y - odom_pose[1], goal_x - odom_pose[0]) - odom_pose[2];
+
+  total_factors = 0;
+  if (dist < goal_radius) {
+    v = 0;
+    delta_x = 0;
+    delta_y = 0;
+  } else if (goal_radius <= dist and dist <= goal_extent + goal_radius) {
+    v = goal_scale * (dist - goal_radius);
+    delta_x = v * cos(theta);
+    delta_y = v * sin(theta);
+    total_factors += 1;
+  } else {
+    v = goal_scale * goal_extent;
+    delta_x = v * cos(theta);
+    delta_y = v * sin(theta);
+    total_factors += 1;
+  }
+  
+  for (i = 1; i < laser_count; i++) {
+    // figure out location of the obstacle...
+    tao = (2 * M_PI * i) / laser_count;
+    obs_x = laser_ranges[i] * cos(tao);
+    obs_y = laser_ranges[i] * sin(tao);
+    // obs.x and obs.y are relative to the robot, and I'm okay with that.
+    
+    dist = sqrt(pow(obs_x, 2) + pow(obs_y, 2));
+    theta = atan2(obs_y, obs_x);
+    
+    if (dist <= obstacle_extent + obstacle_radius) {
+      delta_x += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * cos(theta);
+      delta_y += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * sin(theta);
+      total_factors += 1;
+    }
+  }
+  
+  delta_x = delta_x / total_factors;
+  delta_y = delta_y / total_factors;
+  
+  vel = max_speed * sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+  rot_vel = max_speed * atan2(delta_y, delta_x);
+
+  this->PutCommand(vel, rot_vel);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -430,12 +445,12 @@ void ArtPotDriver::ProcessOdom(player_msghdr_t* hdr, player_position2d_data_t &d
 
   // Cache the new odometric pose, velocity, and stall info
   // NOTE: this->odom_pose is in (mm,mm,deg), as doubles
-  this->odom_pose[0] = data.pos.px * 1e3;
-  this->odom_pose[1] = data.pos.py * 1e3;
-  this->odom_pose[2] = RTOD(data.pos.pa);
-  this->odom_vel[0] = data.vel.px * 1e3;
-  this->odom_vel[1] = data.vel.py * 1e3;
-  this->odom_vel[2] = RTOD(data.vel.pa);
+  this->odom_pose[0] = data.pos.px; // * 1e3;
+  this->odom_pose[1] = data.pos.py; // * 1e3;
+  this->odom_pose[2] = data.pos.pa; //RTOD(data.pos.pa);
+  this->odom_vel[0] = data.vel.px; // * 1e3;
+  this->odom_vel[1] = data.vel.py; // * 1e3;
+  this->odom_vel[2] = data.vel.pa; //RTOD(data.vel.pa);
   this->odom_stall = data.stall;
 
   // Also change this info out for use by others
@@ -470,13 +485,13 @@ void ArtPotDriver::ProcessLaser(player_laser_data_t &data)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Send commands to underlying position device
-void ArtPotDriver::PutCommand(int cmd_speed, int cmd_turnrate)
+void ArtPotDriver::PutCommand(double cmd_speed, double cmd_turnrate)
 {
   player_position2d_cmd_vel_t cmd;
 
-  this->con_vel[0] = (double) cmd_speed;
+  this->con_vel[0] = cmd_speed;
   this->con_vel[1] = 0;
-  this->con_vel[2] = (double) cmd_turnrate;
+  this->con_vel[2] = cmd_turnrate;
 
   memset(&cmd, 0, sizeof(cmd));
 
@@ -486,10 +501,9 @@ void ArtPotDriver::PutCommand(int cmd_speed, int cmd_turnrate)
     cmd.vel.py = 0;
     cmd.vel.pa = 0;
   } else { // Position mode
-    PLAYER_ERROR("SHOULD BE SETTING THIS CORRECTLY!");
-    cmd.vel.px = 1;
-    cmd.vel.py = 0;
-    cmd.vel.pa = 0;
+    cmd.vel.px = this->con_vel[0];
+    cmd.vel.py = this->con_vel[1];
+    cmd.vel.pa = this->con_vel[2];
   }
 
   this->odom->PutMsg(this->InQueue,
@@ -504,9 +518,9 @@ void ArtPotDriver::ProcessCommand(player_msghdr_t* hdr, player_position2d_cmd_po
 {
   int x,y,t;
 
-  x = (int)rint(cmd.pos.px * 1e3);
-  y = (int)rint(cmd.pos.py * 1e3);
-  t = (int)rint(RTOD(cmd.pos.pa));
+  x = cmd.pos.px; //(int)rint(cmd.pos.px * 1e3);
+  y = cmd.pos.py; //(int)rint(cmd.pos.py * 1e3);
+  t = cmd.pos.pa; //(int)rint(RTOD(cmd.pos.pa));
 
   this->cmd_type = 1;
   this->cmd_state = cmd.state;
