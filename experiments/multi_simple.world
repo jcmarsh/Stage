@@ -1,5 +1,7 @@
-# find_target.world
-# A simple scenario where the robot must find the target.
+# multi_simple.world
+#
+# Three cars.
+#
 # Author: James Marshall
 # Date: Feb 25 2013
 
@@ -27,7 +29,7 @@ gridcar
 	name "hank"
 	pose [-5 -7 0 0]
 	localization_origin [0 0 0 0]
-	color "blue"
+	color "red"
 )
 
 gridcar
@@ -35,7 +37,7 @@ gridcar
 	name "frank"
 	pose [-6 -7 0 0]
 	localization_origin [0 0 0 0]
-	color "blue"
+	color "green"
 )
 
 gridcar
