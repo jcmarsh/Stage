@@ -96,6 +96,7 @@ while(True):
     pla1.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
     pla2.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
 
+    gra.setcolor((255, 0, 0, 255))
     prev_points.append(draw_all(gra, pos, offset, None, None, path, prev_points))
 
 print("DONE!")

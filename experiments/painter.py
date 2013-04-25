@@ -19,6 +19,7 @@ prev_points = []
 
 while(True):
     idt = client.read()
+    gra.setcolor((0, 255, 0, 255))
     prev_points.append(draw_all(gra, pos, offset, None, None, None, prev_points))
 
 print("DONE!")
