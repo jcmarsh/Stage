@@ -11,6 +11,9 @@ class Point:
 
     def __eq__(self, o):
         return o != None and o.x == self.x and o.y == self.y
+    
+    def dist(self, other):
+        return math.sqrt(math.pow(self.x - other.x, 2) + math.pow(self.y - other.y, 2))
 
 # TODO: Can likely get rid of this, or generalize
 def to_robot_coords(robot, target):
