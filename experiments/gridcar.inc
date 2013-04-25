@@ -16,22 +16,22 @@ define gridcar_sonars ranger
 	# Units are in meters from the origin, angles in degrees
 	# 16 sensors all at the same point (I don't think it matters)
 	# counter-clockwise from front (right) facing
-	gridcar_sensor( pose [ 0 0 0 0 ] )
-	gridcar_sensor( pose [ 0 0 0 22.5 ] )
-	gridcar_sensor( pose [ 0 0 0 45 ] )
-	gridcar_sensor( pose [ 0 0 0 67.5 ] )
-	gridcar_sensor( pose [ 0 0 0 90 ] )
-	gridcar_sensor( pose [ 0 0 0 112.5 ] )
-	gridcar_sensor( pose [ 0 0 0 135] )
-	gridcar_sensor( pose [ 0 0 0 157.5 ] )
-	gridcar_sensor( pose [ 0 0 0 180] )
-	gridcar_sensor( pose [ 0 0 0 202.5 ] )
-	gridcar_sensor( pose [ 0 0 0 225] )
-	gridcar_sensor( pose [ 0 0 0 247.5 ] )
-	gridcar_sensor( pose [ 0 0 0 270] )
-	gridcar_sensor( pose [ 0 0 0 292.5 ] )
-	gridcar_sensor( pose [ 0 0 0 315] )
-	gridcar_sensor( pose [ 0 0 0 337.5 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 0 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 22.5 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 45 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 67.5 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 90 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 112.5 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 135] )
+	gridcar_sensor( pose [ 0 0 -0.1 157.5 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 180] )
+	gridcar_sensor( pose [ 0 0 -0.1 202.5 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 225] )
+	gridcar_sensor( pose [ 0 0 -0.1 247.5 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 270] )
+	gridcar_sensor( pose [ 0 0 -0.1 292.5 ] )
+	gridcar_sensor( pose [ 0 0 -0.1 315] )
+	gridcar_sensor( pose [ 0 0 -0.1 337.5 ] )
 )
 
 
@@ -50,7 +50,7 @@ define gridcar position
 		point[1] [6 1.6]
 		point[2] [6 5.2]
 		point[3] [0 5.2]
-		z [0.1 3.1]
+		z [0 4]
 	)
 	
 	# Left Wheel
@@ -82,6 +82,8 @@ define gridcar position
 	gridcar_sonars()
 
 	obstacle_return 1	# can hit things
+	laser_return 1		# seen by lasers
 	ranger_return 1		# seen by sonar
 	blob_return 1 		# seen by blobfinders	
+	
 )
