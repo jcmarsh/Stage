@@ -70,7 +70,8 @@ path2.append(way2)
 wav.enable(1)
 wav.set_cmd_pose(goal.x, goal.y, 1)
 
-print "Pose: %f,%f" % (pos.px, pos.py)
+print "Current Pose: %f,%f" % (pos.px, pos.py)
+print "Moving to   : %f,%f" % (goal.x, goal.y)
 
 prev_points = []
 while True:
@@ -90,7 +91,6 @@ while True:
             path1.append(curr)
         
     # At current waypoint?
-    print "Dist Frank? (%f,%f):(%f,%f)=%f" % (way1.x, way1.y, pos1.px, pos1.py, way1.dist(Point(pos1.px, pos1.py)))
     if way1.dist(Point(pos1.px, pos1.py)) < epsilon:
         if len(path1) > 1:
             path2.append(way1)
