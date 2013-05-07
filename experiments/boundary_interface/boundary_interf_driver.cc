@@ -43,17 +43,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // The class for the driver
 class BoundaryInterfDriver : public Driver
 {
-	public:
+public:
 
-		// Constructor; need that
-		BoundaryInterfDriver(ConfigFile* cf, int section);
+  // Constructor; need that
+  BoundaryInterfDriver(ConfigFile* cf, int section);
+  
+  // Must implement the following methods.
+  virtual int Setup();
+  virtual int Shutdown();
 
-		// Must implement the following methods.
-		virtual int Setup();
-		virtual int Shutdown();
+  // This method will be invoked on each incoming message
+  virtual int ProcessMessage(QueuePointer & resp_queue, player_msghdr * hdr, void * data);
 
-		// This method will be invoked on each incoming message
-		virtual int ProcessMessage(QueuePointer & resp_queue, player_msghdr * hdr, void * data);
+private:
+  int SetupOdom();
+  int ShutdownOdom();
+  void ProcessOdom(player_msghdr_t* hdr, player_position2d_data_t &data);
+
+  // Device provided (boundary)
+  player_devaddr_t boundary_id;
+  //  player_boundary_t boundary_data;
+
+  // Device required (position2d)
+  Device *odom;
+  player_devaddr_t odom_addr;
+  double odom_pose[3];
 };
 
 // A factory creation function, declared outside of the class so that it
@@ -79,9 +93,28 @@ void BoundaryInterfDriver_Register(DriverTable* table)
 // Constructor.  Retrieve options from the configuration file and do any
 // pre-Setup() setup.
 BoundaryInterfDriver::BoundaryInterfDriver(ConfigFile* cf, int section)
-    : Driver(cf, section, false, PLAYER_MSGQUEUE_DEFAULT_MAXLEN, PLAYER_BOUNDARY_CODE)
+  : Driver(cf, section)
 {
-	return;
+  // Check for boundary interface (we provide)
+  memset(&(this->boundary_id), 0, sizeof(player_devaddr_t));
+  if (cf->ReadDeviceAddr(&(this->boundary_id), section, "provides",
+			 PLAYER_BOUNDARY_CODE, -1, NULL) == 0) {
+    if (this->AddInterface(this->boundary_id) != 0) {
+      this->SetError(-1);
+      return;
+    }
+  }
+
+  // Check for position2d (we requrie)
+  this->odom = NULL;
+  if (cf->ReadDeviceAddr(&(this->odom_addr), section, "requires",
+			 PLAYER_POSITION2D_CODE, -1, NULL) != 0) {
+    PLAYER_ERROR("Could not find required position2d device!");
+    this->SetError(-1);
+    return;
+  }
+
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +123,8 @@ int BoundaryInterfDriver::Setup()
 {
 	puts("BoundaryInterfDriver initialising");
 
-	srand (static_cast<unsigned int> (time (NULL)));
+	if (this->SetupOdom() != 0)
+	  return -1;
 
 	puts("BoundaryInterfDriver ready");
 
@@ -137,5 +171,30 @@ extern "C" {
 		puts("BoundaryInterfDriver done");
 		return(0);
 	}
+}
+
+int BoundaryInterfDriver::ShutdownOdom() {
+  this->odom->Unsubscribe(this->InQueue);
+  return 0;
+}
+
+int BoundaryInterfDriver::SetupOdom() {
+  if (!(this->odom = deviceTable->GetDevice(this->odom_addr))) {
+    PLAYER_ERROR("unable to locate suitable position device");
+    return -1;
+  }
+  if (this->odom->Subscribe(this->InQueue) != 0) {
+    PLAYER_ERROR("unable to subscribe to position device");
+    return -1;
+  }
+
+  this->odom_pose[0] = this->odom_pose[1] = this->odom_pose[2] = 0.0;
+  return 0;
+}
+
+void BoundaryInterfDriver::ProcessOdom(player_msghdr_t* hdr, player_position2d_data_t &data) {
+  this->odom_pose[0] = data.pos.px;
+  this->odom_pose[1] = data.pos.py;
+  this->odom_pose[2] = data.pos.pa;
 }
 

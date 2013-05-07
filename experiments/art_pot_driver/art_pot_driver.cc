@@ -5,9 +5,7 @@
  * shared object.
  */
 
-#if !defined (WIN32) || defined (__MINGW32__)
-  #include <unistd.h>
-#endif
+#include <unistd.h>
 #include <string.h>
 #include <math.h>
 
