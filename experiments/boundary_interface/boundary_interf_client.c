@@ -28,15 +28,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
  * This file implements a C client proxy for the interface defined in
- * eginterf_client.h. The following functions are essential, others depend on
- * the design of your interface:
+ * boundary_interf_client.h.
  *
- * eginterf_create      Creates a proxy for the interface
- * eginterf_destroy     Destroys a proxy for the interface
- * eginterf_subscribe   Subscribes to a device that provides the interface
- * eginterf_unsubscribe Unsubscribes from a subscribed device
- * eginterf_putmsg      Called by the client library whenever there a data
- *                      message is received for this proxy
+ * boundary_interf_create      Creates a proxy for the interface
+ * boundary_interf_destroy     Destroys a proxy for the interface
+ * boundary_interf_subscribe   Subscribes to a device that provides the interface
+ * boundary_interf_unsubscribe Unsubscribes from a subscribed device
+ * boundary_interf_putmsg      Called by the client library whenever a data
+ *                             message is received for this proxy
  */
 
 #include <string.h>
@@ -84,25 +83,13 @@ void boundary_interf_putmsg (boundary_interf_t *device, player_msghdr_t *header,
 {
 	if((header->type == PLAYER_MSGTYPE_DATA) && (header->subtype == PLAYER_BOUNDARY_DATA_READING))
 	{
-		player_boundary_interf_data_t *stuffData = (player_boundary_interf_data_t *) data;
-		assert(header->size > 0);
+	  printf("Recieved known message type\n");
+	  player_boundary_interf_data_t *stuffData = (player_boundary_interf_data_t *) data;
+	  assert(header->size > 0);
 
-		device->reading = stuffData->reading;
+	  device->reading = stuffData->reading;
 	}
 	else
-		printf ("skipping boundary_interf message with unknown type/subtype: %s/%d\n", msgtype_to_str(header->type), header->subtype);
+	  printf ("skipping boundary_interf message with unknown type/subtype: %s/%d\n", msgtype_to_str(header->type), header->subtype);
 }
 
-int boundary_interf_req (boundary_interf_t *device, int blah)
-{
-	int result = 0;
-	player_boundary_interf_req_t req;
-	player_boundary_interf_req_t *rep;
-	memset (&rep, 0, sizeof (player_boundary_interf_req_t));
-	req.value = blah;
-	if ((result = playerc_client_request (device->info.client, &device->info, PLAYER_BOUNDARY_REQ_REQUEST, &req, (void*) &rep)) < 0)
-		return result;
-
-	player_boundary_interf_req_t_free(rep);
-	return 0;
-}

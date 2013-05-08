@@ -51,8 +51,6 @@ int boundary_interf_subscribe (boundary_interf_t *device, int access);
 
 int boundary_interf_unsubscribe (boundary_interf_t *device);
 
-int boundary_interf_req (boundary_interf_t *device, int blah);
-
 #ifdef __cplusplus
 }
 #endif

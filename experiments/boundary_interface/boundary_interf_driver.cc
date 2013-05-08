@@ -146,17 +146,17 @@ int BoundaryInterfDriver::Shutdown()
 int BoundaryInterfDriver::ProcessMessage(QueuePointer &resp_queue, player_msghdr * hdr, void * data)
 {
 	player_boundary_interf_data resp;
-	player_boundary_interf_req reqResp;
 
-	if (Message::MatchMessage (hdr, PLAYER_MSGTYPE_REQ, PLAYER_BOUNDARY_REQ_REQUEST, device_addr))
-	{
-		printf ("BoundaryInterfDriver: Got request: %d\n", reinterpret_cast<player_boundary_interf_req*> (data)->value);
-		reqResp.value = RAND_MAX;
-		printf ("BoundaryInterfDriver: Sending response: %d\n", reqResp.value);
-		Publish (device_addr,  PLAYER_MSGTYPE_RESP_ACK, PLAYER_BOUNDARY_REQ_REQUEST, &reqResp, sizeof (reqResp), NULL);
-		return 0;
+	if (Message::MatchMessage (hdr, PLAYER_MSGTYPE_DATA, PLAYER_POSITION2D_DATA_STATE, this->odom_addr)) {
+	  assert(hdr->size == sizeof(player_position2d_data_t));
+	  ProcessOdom(hdr, *reinterpret_cast<player_position2d_data_t *> (data));
+
+	  resp.reading = 42.42;
+	  printf ("BoundaryInterfDriver: publishing message: %f\n", resp.reading);
+	  Publish (device_addr,  PLAYER_MSGTYPE_DATA, PLAYER_BOUNDARY_DATA_READING, &resp, sizeof (resp), NULL);
+	  return 0;
 	}
-
+	
 	return(-1);
 }
 

@@ -4,17 +4,11 @@ description {
 
 /** read data */
 message { DATA, READING, 1, player_boundary_interf_data_t };
-/** request sensor to sense */
-message { REQ, REQUEST, 1, player_boundary_interf_req_t };
 
 typedef struct player_boundary_interf_data
 {
 	double reading;
 } player_boundary_interf_data_t;
 
-typedef struct player_boundary_interf_req
-{
-	int value;
-} player_boundary_interf_req_t;
 
 

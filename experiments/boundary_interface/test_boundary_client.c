@@ -46,6 +46,7 @@ playerxdr_function_t* player_plugininterf_gettable (void);
 int main(int argc, const char **argv)
 {
 	int i;
+	double read;
 	playerc_client_t *client;
 	boundary_interf_t *device;
 
@@ -69,11 +70,9 @@ int main(int argc, const char **argv)
 		return -1;
 	}
 
-	// Send a request
-	if (boundary_interf_req (device, 3) < 0)
-		printf ("Request failed\n");
-	else
-	  printf("Request suceeded\n");
+
+	playerc_client_read (client);
+	printf("reading: %f\n", device->reading);
 
 	// Shutdown
 	boundary_interf_unsubscribe(device);
