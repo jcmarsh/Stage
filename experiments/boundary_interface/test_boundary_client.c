@@ -50,6 +50,7 @@ int main(int argc, const char **argv)
   double read;
   playerc_client_t *client;
   playerc_position2d_t *position;
+  playerc_planner_t *pla;
   boundary_interf_t *device;
   
   // Create a client and connect it to the server.
@@ -61,6 +62,11 @@ int main(int argc, const char **argv)
 
   position = playerc_position2d_create(client, 0);
   if (playerc_position2d_subscribe(position, PLAYER_OPEN_MODE)) {
+    return -1;
+  }
+
+  pla = playerc_planner_create(client, 0);
+  if (playerc_planner_subscribe(pla, PLAYER_OPEN_MODE)) {
     return -1;
   }
 
@@ -79,7 +85,7 @@ int main(int argc, const char **argv)
     playerc_client_read (client);
     printf("Value: %f\tVector: (%f,%f)\n", device->value, device->x_comp, device->y_comp);
     
-    playerc_position2d_set_cmd_vel(position, device->x_comp * scale, device->y_comp * scale, 0, 1);
+    playerc_planner_set_cmd_pose(pla, position->px + device->x_comp * scale, position->py + device->y_comp * scale, 0);
   }
 
   // Shutdown
