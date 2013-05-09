@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
 #include <libplayercore/playercore.h>
 
@@ -59,6 +60,8 @@ private:
   int SetupOdom();
   int ShutdownOdom();
   void ProcessOdom(player_msghdr_t* hdr, player_position2d_data_t &data);
+  double CalcValue(double x, double y);
+  void CalcVector(double x, double y, double a, double* x_comp, double* y_comp);
 
   // Device provided (boundary)
   player_devaddr_t boundary_id;
@@ -143,16 +146,48 @@ int BoundaryInterfDriver::Shutdown()
 	return(0);
 }
 
+double BoundaryInterfDriver::CalcValue(double x, double y) {
+  return -2 * ((x * x) + (y * y));
+}
+
+void BoundaryInterfDriver::CalcVector(double x, double y, double a, double* x_comp, double* y_comp) {
+  int samples = 8;
+  int i;
+  double d_x, d_y;
+  double d_x_sum = 0.0, d_y_sum = 0.0;
+  double rot_theta, increment, value;
+
+  increment = (2.0 * M_PI) / samples;
+  for (i = 0; i < samples; i++) {
+    rot_theta = a + i * increment;
+    d_x = cos(rot_theta);
+    d_y = sin(rot_theta);
+    
+    value = CalcValue(x + d_x, y + d_y);
+    d_x_sum += value * d_x;
+    d_y_sum += value * d_y;
+  }
+
+  *x_comp = d_x_sum;
+  *y_comp = d_y_sum;
+
+  return;
+}
+
 int BoundaryInterfDriver::ProcessMessage(QueuePointer &resp_queue, player_msghdr * hdr, void * data)
 {
 	player_boundary_interf_data resp;
+	double x, y;
 
 	if (Message::MatchMessage (hdr, PLAYER_MSGTYPE_DATA, PLAYER_POSITION2D_DATA_STATE, this->odom_addr)) {
 	  assert(hdr->size == sizeof(player_position2d_data_t));
 	  ProcessOdom(hdr, *reinterpret_cast<player_position2d_data_t *> (data));
 
-	  resp.reading = 42.42;
-	  printf ("BoundaryInterfDriver: publishing message: %f\n", resp.reading);
+	  resp.value = CalcValue(this->odom_pose[0], this->odom_pose[1]);
+	  CalcVector(this->odom_pose[0], this->odom_pose[1], this->odom_pose[2], &x, &y);
+	  resp.x_comp = x;
+	  resp.y_comp = y;
+
 	  Publish (device_addr,  PLAYER_MSGTYPE_DATA, PLAYER_BOUNDARY_DATA_READING, &resp, sizeof (resp), NULL);
 	  return 0;
 	}

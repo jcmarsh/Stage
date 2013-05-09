@@ -57,7 +57,9 @@ boundary_interf_t *boundary_interf_create (playerc_client_t *client, int index)
 	memset (device, 0, sizeof (boundary_interf_t));
 	playerc_device_init (&device->info, client, PLAYER_BOUNDARY_CODE, index, (playerc_putmsg_fn_t) boundary_interf_putmsg);
 
-	device->reading = 0;
+	device->value = 0;
+	device->x_comp = 0;
+	device->y_comp = 0;
 	return device;
 }
 
@@ -87,7 +89,9 @@ void boundary_interf_putmsg (boundary_interf_t *device, player_msghdr_t *header,
 	  player_boundary_interf_data_t *stuffData = (player_boundary_interf_data_t *) data;
 	  assert(header->size > 0);
 
-	  device->reading = stuffData->reading;
+	  device->value = stuffData->value;
+	  device->x_comp = stuffData->x_comp;
+	  device->y_comp = stuffData->y_comp;
 	}
 	else
 	  printf ("skipping boundary_interf message with unknown type/subtype: %s/%d\n", msgtype_to_str(header->type), header->subtype);

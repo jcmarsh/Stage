@@ -37,10 +37,12 @@ extern "C" {
 
 typedef struct
 {
-	/* Device info; must be at the start of all device structures. */
-	playerc_device_t info;
+  /* Device info; must be at the start of all device structures. */
+  playerc_device_t info;
 
-	double reading;
+  double x_comp;
+  double y_comp;
+  double value;
 } boundary_interf_t;
 
 boundary_interf_t *boundary_interf_create (playerc_client_t *client, int index);

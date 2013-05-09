@@ -45,40 +45,48 @@ playerxdr_function_t* player_plugininterf_gettable (void);
 
 int main(int argc, const char **argv)
 {
-	int i;
-	double read;
-	playerc_client_t *client;
-	boundary_interf_t *device;
+  double scale = .01;
+  int i;
+  double read;
+  playerc_client_t *client;
+  playerc_position2d_t *position;
+  boundary_interf_t *device;
+  
+  // Create a client and connect it to the server.
+  client = playerc_client_create(NULL, "localhost", 6665);
+  if (0 != playerc_client_connect(client)) {
+    printf ("Could not connect\n");
+    return -1;
+  }
 
-	// Create a client and connect it to the server.
-	client = playerc_client_create(NULL, "localhost", 6665);
-	if (0 != playerc_client_connect(client))
-	{
-		printf ("Could not connect\n");
-		return -1;
-	}
+  position = playerc_position2d_create(client, 0);
+  if (playerc_position2d_subscribe(position, PLAYER_OPEN_MODE)) {
+    return -1;
+  }
 
-	// Load the plugin interface
-	if (playerc_add_xdr_ftable (player_plugininterf_gettable (), 0) < 0)
-		printf ("Could not add xdr functions\n");
+  // Load the plugin interface
+  if (playerc_add_xdr_ftable (player_plugininterf_gettable (), 0) < 0)
+    printf ("Could not add xdr functions\n");
 
-	// Create and subscribe to a device using the interface.
-	device = boundary_interf_create(client, 0);
-	if (boundary_interf_subscribe(device, PLAYER_OPEN_MODE) != 0)
-	{
-		printf ("Could not subscribe\n");
-		return -1;
-	}
+  // Create and subscribe to a device using the interface.
+  device = boundary_interf_create(client, 0);
+  if (boundary_interf_subscribe(device, PLAYER_OPEN_MODE) != 0)	{
+    printf ("Could not subscribe\n");
+    return -1;
+  }
 
+  while (true) {
+    playerc_client_read (client);
+    printf("Value: %f\tVector: (%f,%f)\n", device->value, device->x_comp, device->y_comp);
+    
+    playerc_position2d_set_cmd_vel(position, device->x_comp * scale, device->y_comp * scale, 0, 1);
+  }
 
-	playerc_client_read (client);
-	printf("reading: %f\n", device->reading);
-
-	// Shutdown
-	boundary_interf_unsubscribe(device);
-	boundary_interf_destroy(device);
-	playerc_client_disconnect(client);
-	playerc_client_destroy(client);
-
-	return 0;
+  // Shutdown
+  boundary_interf_unsubscribe(device);
+  boundary_interf_destroy(device);
+  playerc_client_disconnect(client);
+  playerc_client_destroy(client);
+  
+  return 0;
 }
