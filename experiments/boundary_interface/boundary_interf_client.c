@@ -85,7 +85,6 @@ void boundary_interf_putmsg (boundary_interf_t *device, player_msghdr_t *header,
 {
 	if((header->type == PLAYER_MSGTYPE_DATA) && (header->subtype == PLAYER_BOUNDARY_DATA_READING))
 	{
-	  printf("Recieved known message type\n");
 	  player_boundary_interf_data_t *stuffData = (player_boundary_interf_data_t *) data;
 	  assert(header->size > 0);
 

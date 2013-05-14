@@ -65,6 +65,9 @@ int main(int argc, const char **argv)
   playerc_position2d_t *position_s;
   playerc_planner_t *pla_s;
   boundary_interf_t *device_s;
+
+  double threshold = -40.0;
+  double epsilon = 5.0;
   
   // Create a client and connect it to the server.
   client_h = playerc_client_create(NULL, "localhost", 6665);
@@ -149,16 +152,34 @@ int main(int argc, const char **argv)
   }
   printf("Samantha is done initializing.\n");
 
-
   while (true) {
-    playerc_client_read (client_h);    
-    playerc_planner_set_cmd_pose(pla_h, position_h->px + device_h->x_comp * scale, position_h->py + device_h->y_comp * scale, 0);
+    playerc_client_read (client_h);
+    if (device_h->value < threshold - epsilon) {
+      playerc_planner_set_cmd_pose(pla_h, position_h->px + device_h->x_comp * scale, position_h->py + device_h->y_comp * scale, 0);
+    } else if (device_h->value > threshold + epsilon) {
+      playerc_planner_set_cmd_pose(pla_h, position_h->px - device_h->x_comp * scale, position_h->py - device_h->y_comp * scale, 0);
+    } else {
+      playerc_planner_set_cmd_pose(pla_h, position_h->px, position_h->py, 0);
+    }
 
     playerc_client_read (client_f);    
-    playerc_planner_set_cmd_pose(pla_f, position_f->px + device_f->x_comp * scale, position_f->py + device_f->y_comp * scale, 0);
+    if (device_f->value < threshold - epsilon) {
+      playerc_planner_set_cmd_pose(pla_f, position_f->px + device_f->x_comp * scale, position_f->py + device_f->y_comp * scale, 0);
+    } else if (device_f->value > threshold + epsilon) {
+      playerc_planner_set_cmd_pose(pla_f, position_f->px - device_f->x_comp * scale, position_f->py - device_f->y_comp * scale, 0);
+    } else {
+      playerc_planner_set_cmd_pose(pla_f, position_f->px, position_f->py, 0);
+    }
 
-    playerc_client_read (client_s);    
-    playerc_planner_set_cmd_pose(pla_s, position_s->px + device_s->x_comp * scale, position_s->py + device_s->y_comp * scale, 0);
+    playerc_client_read (client_s);
+    if (device_s->value < threshold - epsilon) {
+      playerc_planner_set_cmd_pose(pla_s, position_s->px + device_s->x_comp * scale, position_s->py + device_s->y_comp * scale, 0);
+    } else if (device_s->value > threshold + epsilon) {
+      playerc_planner_set_cmd_pose(pla_s, position_s->px - device_s->x_comp * scale, position_s->py - device_s->y_comp * scale, 0);
+    } else {
+      playerc_planner_set_cmd_pose(pla_s, position_s->px, position_s->py, 0);
+    }
+
   }
   return 0;
 }
