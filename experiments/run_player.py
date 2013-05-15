@@ -39,8 +39,7 @@ shutil.copyfile(old_world_name, new_world_name)
 
 # Add a map driver to a new .cfg that uses the provided map name
 print "Ready to process config file: ", config_name
-
-new_cfg_name = "run_temp.cfg"  #_" + config_name
+new_cfg_name = "run_temp.cfg"
 if WriteCFG(new_cfg_name, config_name, map_name) != 0:
     print "Failed to write the config file %s" % (new_cfg_name)
     exit()
