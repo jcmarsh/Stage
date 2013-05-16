@@ -12,6 +12,7 @@ import sys
 
 from stage_utils import *
 
+#####################################################################
 # Phase 1: Setup
 # Argument should be the name of experiment description file
 def print_n_quit():
@@ -48,16 +49,24 @@ if WriteCFG(new_cfg_name, config_file_name, map_file_name) != 0:
     print "Failed to write the config file %s" % (new_cfg_name)
     exit()
 
+# Enough is now known to start player. Need to give it enough time to initialize before main loop.
+# TODO: Wait on keypress?
+# TODO: Set time for sim?
+player_id = subprocess.Popen(["player", new_cfg_name])
+
+# Should we launch a controller just for recording things?
+# Will the script have access to each controller's runtime?
+# How are we managing all of this?
+
+# DON"T FORGET ABOUT NOISE AND THE OTHER "KNOBS"
+
 print "Number of controllers: %s" % (config.get("controllers", "num"))
 print "Controller 1: %s \t %s" % (config.get("controllers", "cont0"), config.get("controllers", "args0"))
 
-
+#####################################################################
 # Phase 2: Run
-
-# Call is no good: doesn't return!
-# Will need to return, and then likely spend some time waiting for init.
-subprocess.call(["player", new_cfg_name])
 
 print "This is where the controllers should be started"
 
+#####################################################################
 # Phase 3: Report

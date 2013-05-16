@@ -40,4 +40,3 @@ def WriteCFG(new_config_name, old_config_name, map_name):
     new_cfg.write(")\n\n")
     new_cfg.close()
     return 0
-
