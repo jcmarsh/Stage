@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 
 from stage_utils import *
 
@@ -16,7 +17,7 @@ from stage_utils import *
 # Phase 1: Setup
 # Argument should be the name of experiment description file
 def print_n_quit():
-    print 'usage: James, fill this in please.'
+    print 'usage: python overlord.py [experiment_description.ini]'
     exit()
 
 if len(sys.argv) < 2:
@@ -49,19 +50,35 @@ if WriteCFG(new_cfg_name, config_file_name, map_file_name) != 0:
     print "Failed to write the config file %s" % (new_cfg_name)
     exit()
 
-# Enough is now known to start player. Need to give it enough time to initialize before main loop.
-# TODO: Wait on keypress?
-# TODO: Set time for sim?
+# Enough is now known to start player.
 player_id = subprocess.Popen(["player", new_cfg_name])
+# Give the simulator a chance to startup
+time.sleep(2)
+
+
+# Setup our controller
+client = playerc_client(None, 'localhost', 6665)
+if client.connect() != 0:
+    raise playerc_error_str()
+# proxy for the simulator
+sim = playerc_simulation(client, 0)
+if sim.subscribe(PLAYERC_OPEN_MODE) !=0:
+    raise playerc_error_str()
+
+# Launch the .ini described controllers
+controllers = []
+num_controllers = int(config.get("controllers", "num"))
+for i in range(0, num_controllers - 1):
+    controller_name = config.get("controllers", "cont" + str(i))
+    robot_name = config.get("controllers", "name" + str(i))
+    controllers.append(subprocess.Popen(["python", controller_name, robot_name]))
+
 
 # Should we launch a controller just for recording things?
 # Will the script have access to each controller's runtime?
 # How are we managing all of this?
 
 # DON"T FORGET ABOUT NOISE AND THE OTHER "KNOBS"
-
-print "Number of controllers: %s" % (config.get("controllers", "num"))
-print "Controller 1: %s \t %s" % (config.get("controllers", "cont0"), config.get("controllers", "args0"))
 
 #####################################################################
 # Phase 2: Run
