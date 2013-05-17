@@ -11,7 +11,27 @@ import subprocess
 import sys
 import time
 
+from playerc import *
 from stage_utils import *
+
+#####################################################################
+# Represents some handy information about a robot
+class Robot:
+    def __init__(self, name, controller, x, y, a):
+        self.start_x = x
+        self.start_y = y
+        self.start_a = a
+        self.name = name
+        self.controller_n = controller
+        self.controller_p = None
+
+def targetReached():
+    for i in range(0, len(robots)):
+        pose = sim.get_pose2d(robots[i].name)
+        dist = math.sqrt(math.pow(7 - pose[1], 2) + math.pow(7 - pose[2], 2))
+        if dist < 1:
+            return True
+    return False
 
 #####################################################################
 # Phase 1: Setup
@@ -55,6 +75,14 @@ player_id = subprocess.Popen(["player", new_cfg_name])
 # Give the simulator a chance to startup
 time.sleep(2)
 
+num_controllers = int(config.get("controllers", "num"))
+robots = []
+for i in range(0, num_controllers):
+    controller_name = config.get("controllers", "cont" + str(i))
+    robot_name = config.get("controllers", "name" + str(i))
+    loc = search_pose(new_world_name, robot_name)
+    print "We've got a robot: %s\t%s - (%f,%f)" % (robot_name, controller_name, loc[0], loc[1])
+    robots.append(Robot(robot_name, controller_name, loc[0], loc[1], 0))
 
 # Setup our controller
 client = playerc_client(None, 'localhost', 6665)
@@ -65,15 +93,6 @@ sim = playerc_simulation(client, 0)
 if sim.subscribe(PLAYERC_OPEN_MODE) !=0:
     raise playerc_error_str()
 
-# Launch the .ini described controllers
-controllers = []
-num_controllers = int(config.get("controllers", "num"))
-for i in range(0, num_controllers - 1):
-    controller_name = config.get("controllers", "cont" + str(i))
-    robot_name = config.get("controllers", "name" + str(i))
-    controllers.append(subprocess.Popen(["python", controller_name, robot_name]))
-
-
 # Should we launch a controller just for recording things?
 # Will the script have access to each controller's runtime?
 # How are we managing all of this?
@@ -83,7 +102,33 @@ for i in range(0, num_controllers - 1):
 #####################################################################
 # Phase 2: Run
 
-print "This is where the controllers should be started"
+for run_num in range (0, int(config.get("experiment", "runs"))):
+    # Launch the .ini described controllers
+    num_controllers = int(config.get("controllers", "num"))
+    for i in range(0, len(robots)):
+        print "Opening controller for %s" % (robots[i].name)
+        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
+
+    # Test for whatever it is we are measuring
+    finished = False
+    while (not(finished)):
+            finished = targetReached() # Is experiment complete?
+
+#        if (): # Did it run out fo time?
+#            finished = True
+
+    # Record results
+    print "Action will be taken!"
+
+    # Shut down controllers
+    for i in range(0, len(robots)):
+        robots[i].controller_p.terminate()
+    
+    # Reset the robot locations
+    for i in range(0, len(robots)):
+        sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)
+
+
 
 #####################################################################
 # Phase 3: Report
