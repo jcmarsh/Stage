@@ -73,7 +73,7 @@ if WriteCFG(new_cfg_name, config_file_name, map_file_name) != 0:
 # Enough is now known to start player.
 player_id = subprocess.Popen(["player", new_cfg_name])
 # Give the simulator a chance to startup
-time.sleep(2)
+time.sleep(1)
 
 num_controllers = int(config.get("controllers", "num"))
 robots = []
@@ -127,6 +127,9 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Reset the robot locations
     for i in range(0, len(robots)):
         sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)
+
+    # Take a short break... see if that helps
+    time.sleep(.25)
 
 
 
