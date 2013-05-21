@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 
+from ctypes import *
 from playerc import *
 from stage_utils import *
 
@@ -98,6 +99,19 @@ if sim.subscribe(PLAYERC_OPEN_MODE) !=0:
 # How are we managing all of this?
 
 # DON"T FORGET ABOUT NOISE AND THE OTHER "KNOBS"
+
+# HOW DO I READ THE SIMULATION TIME?
+# From playerc_wrap.h
+#PLAYERC_EXPORT int playerc_simulation_get_property(playerc_simulation_t *device,
+#                                    char* name,
+#                                    char* property,
+#                                    void* value,
+#                                    size_t value_len);
+
+uh = 89
+time = sim.get_time(uh)
+print "Time: %d" % (time)
+
 
 #####################################################################
 # Phase 2: Run
