@@ -40,6 +40,7 @@ waypoint = Point(0,0)
 while(True):
     idt = client.read()
 
+    # Check if replaning is warranted
     # check for obstacles, for a*
     for i in range(0, ran.ranges_count):
         # figure out location of the obstacle...
@@ -48,17 +49,15 @@ while(True):
         obs_y = ran.ranges[i] * math.sin(tao)
         # obs_x and obs_y are relative to the robot, and I'm okay with that.
         if add_obstacle(obs_x, obs_y):
-            replan = True
+            replan = True # New obstacle? Replan.
 
-    # Reached waypoint?
+    # Reached waypoint? Replan.
     if algs.gridify(Point(pos.px, pos.py), grid_num, offset) == algs.gridify(waypoint, grid_num, offset):
         replan = True
 
-    # TODO: Replanning also needs to be done when a waypoint is reached.
-    print "Plan: %s" % (replan)
     if replan:
-        print "Replanning."
         replan = False
+        # TODO Need to set a timeout of some sort.
         path = planner.plan(Point(pos.px, pos.py), goal)
 
     # Should check if goal_node has been reached.

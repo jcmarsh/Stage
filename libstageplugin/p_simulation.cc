@@ -166,9 +166,9 @@ int InterfaceSimulation::ProcessMessage(QueuePointer &resp_queue,
 	// Time, added by jcm
 	if(Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ, PLAYER_SIMULATION_REQ_GET_TIME, addr)) {    
 	  player_simulation_time_req_t* req = (player_simulation_time_req_t*)data;
-	  printf("File: %s\tLine: %d\t FUCK\n", __FILE__, __LINE__);
 
-	  Model* mod = StgDriver::world->GetModel("stage");
+	  // This seems pretty horrible. Experiment MUST have a robot named "hank" -jcm
+	  Model* mod = StgDriver::world->GetModel("hank");
 				
 	  if( mod ) {
 	    //make a new structure and copy req into it
@@ -177,7 +177,6 @@ int InterfaceSimulation::ProcessMessage(QueuePointer &resp_queue,
 	      
 	    // and copy the time data
 	    reply.frank = mod->GetWorld()->SimTimeNow();
-	    printf("File: %s\tLine: %d\t Time:%lu\n", __FILE__, __LINE__, mod->GetWorld()->SimTimeNow());
 
 	    this->driver->Publish( this->addr, resp_queue,
 				   PLAYER_MSGTYPE_RESP_ACK,
@@ -185,7 +184,7 @@ int InterfaceSimulation::ProcessMessage(QueuePointer &resp_queue,
 				   (void*)&reply, sizeof(reply), NULL);
 	    return(0);
 	  } else {
-	    printf("File: %s\tLine: %d\t FUCKFUCKFUCK\n", __FILE__, __LINE__);
+	    printf("File: %s:%d\t Failed to retrieve model. Do you have one named hank?\n", __FILE__, __LINE__);
 	  }
 	}
 	  
