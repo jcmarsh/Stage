@@ -116,7 +116,7 @@ except (ConfigParser.NoOptionError, ValueError):
 
 #####################################################################
 # Phase 2: Run
-
+times = []
 for run_num in range (0, int(config.get("experiment", "runs"))):
     start_time = sim.get_time(0)
     current_time = start_time
@@ -135,10 +135,10 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
         if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
             finished = True
             print "TIMEOUT!"
+        time.sleep(.02)
 
     # Record results
-    print "Time taken: %f" % ((current_time - start_time) / time_scale)
-    
+    times.append((current_time - start_time) / time_scale)
 
     # Shut down controllers
     for i in range(0, len(robots)):
@@ -151,6 +151,8 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Take a short break... see if that helps
     time.sleep(.25)
 
+print "OVER"
+print times
 
 
 #####################################################################
