@@ -11,7 +11,6 @@ import subprocess
 import sys
 import time
 
-from ctypes import *
 from playerc import *
 from stage_utils import *
 
@@ -74,8 +73,9 @@ if WriteCFG(new_cfg_name, config_file_name, map_file_name) != 0:
 # Enough is now known to start player.
 player_id = subprocess.Popen(["player", new_cfg_name])
 # Give the simulator a chance to startup
-time.sleep(1)
+time.sleep(2)
 
+# Robot information
 num_controllers = int(config.get("controllers", "num"))
 robots = []
 for i in range(0, num_controllers):
@@ -100,23 +100,26 @@ if sim.subscribe(PLAYERC_OPEN_MODE) !=0:
 
 # DON"T FORGET ABOUT NOISE AND THE OTHER "KNOBS"
 
-# HOW DO I READ THE SIMULATION TIME?
-# From playerc_wrap.h
-#PLAYERC_EXPORT int playerc_simulation_get_property(playerc_simulation_t *device,
-#                                    char* name,
-#                                    char* property,
-#                                    void* value,
-#                                    size_t value_len);
-
-uh = 89
-time = sim.get_time(uh)
-print "Time: %d" % (time)
-
+# Finally, set up experiment specific configuration
+# TODO: This could be cleaned up with a function.
+time_scale = 1000000
+try:
+    num_runs = int(config.get("experiment", "runs"))
+except (ConfigParser.NoOptionError, ValueError):
+    num_runs = 1
+    print "Failed to read \"runs\" value from %s, defaulting to 1" % (experiment_desc)
+try:
+    timeout = int(config.get("experiment", "timeout"))
+except (ConfigParser.NoOptionError, ValueError):
+    timeout = 600
+    print "Failed to read \"timeout\" value from %s, defaulting to 600 seconds" % (experiment_desc)
 
 #####################################################################
 # Phase 2: Run
 
 for run_num in range (0, int(config.get("experiment", "runs"))):
+    start_time = sim.get_time(0)
+    current_time = start_time
     # Launch the .ini described controllers
     num_controllers = int(config.get("controllers", "num"))
     for i in range(0, len(robots)):
@@ -126,13 +129,16 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Test for whatever it is we are measuring
     finished = False
     while (not(finished)):
-            finished = targetReached() # Is experiment complete?
+        finished = targetReached() # Is experiment complete?
 
-#        if (): # Did it run out fo time?
-#            finished = True
+        current_time = sim.get_time(0)
+        if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
+            finished = True
+            print "TIMEOUT!"
 
     # Record results
-    print "Action will be taken!"
+    print "Time taken: %f" % ((current_time - start_time) / time_scale)
+    
 
     # Shut down controllers
     for i in range(0, len(robots)):

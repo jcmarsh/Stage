@@ -4,6 +4,8 @@
 
 import math
 import sys
+import time
+
 from playerc import *
 from stage_utils import *
 
@@ -35,7 +37,9 @@ prev_points = []
 while True:
     idt = client.read()
     
-    prev_points.append(draw_all(gra, pos, Point(0,0), None, None, None, prev_points))
+#    prev_points.append(draw_all(gra, pos, Point(0,0), None, None, None, prev_points))
+    print "Pose: %f,%f" % (pos.px, pos.py)
+    time.sleep(.2)
 
 print("DONE!")
 
