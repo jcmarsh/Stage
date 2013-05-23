@@ -101,6 +101,8 @@ if sim.subscribe(PLAYERC_OPEN_MODE) !=0:
 # DON"T FORGET ABOUT NOISE AND THE OTHER "KNOBS"
 
 # Finally, set up experiment specific configuration
+# TODO: This could be cleaned up with a function.
+time_scale = 1000000
 try:
     num_runs = int(config.get("experiment", "runs"))
 except (ConfigParser.NoOptionError, ValueError):
@@ -116,6 +118,8 @@ except (ConfigParser.NoOptionError, ValueError):
 # Phase 2: Run
 
 for run_num in range (0, int(config.get("experiment", "runs"))):
+    start_time = sim.get_time(0)
+    current_time = start_time
     # Launch the .ini described controllers
     num_controllers = int(config.get("controllers", "num"))
     for i in range(0, len(robots)):
@@ -125,14 +129,16 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Test for whatever it is we are measuring
     finished = False
     while (not(finished)):
-        print "Time: %d" % (sim.get_time(0))
         finished = targetReached() # Is experiment complete?
 
-#        if (): # Did it run out fo time?
-#            finished = True
+        current_time = sim.get_time(0)
+        if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
+            finished = True
+            print "TIMEOUT!"
 
     # Record results
-    print "Action will be taken!"
+    print "Time taken: %f" % ((current_time - start_time) / time_scale)
+    
 
     # Shut down controllers
     for i in range(0, len(robots)):
