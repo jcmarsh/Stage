@@ -63,7 +63,20 @@ if WriteFloor(map_file_name) != 0:
 
 new_world_name = "run_temp.world"
 old_world_name = search_text_property(config_file_name, "worldfile")
-shutil.copyfile(old_world_name, new_world_name)
+new_world_file = open(new_world_name, "w")
+old_world_file = open(old_world_name, "r")
+    
+for line in old_world_file:
+    new_world_file.write(line)
+old_world_file.close()
+
+new_world_file.write("\n\n")
+new_world_file.write("# The following was added by overload.py parsing the .ini experiment file.\n")
+for pair in config.items("worldfile"):
+    new_world_file.write(pair[0] + " " + pair[1] + "\n")
+new_world_file.write("\n")
+
+new_world_file.close()
 
 new_cfg_name = "run_temp.cfg"
 if WriteCFG(new_cfg_name, config_file_name, map_file_name) != 0:

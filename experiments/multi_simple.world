@@ -10,8 +10,6 @@ include "target.inc"
 include "map.inc"
 include "floor.inc"
 
-speedup 1
-
 window
 (
 	size [ 900 900 ]
