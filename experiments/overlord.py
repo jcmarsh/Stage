@@ -147,7 +147,9 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Shut down controllers
     for i in range(0, len(robots)):
         robots[i].controller_p.terminate()
-    
+    for i in range(0, len(robots)):
+        robots[i].controller_p.join()
+
     # Reset the robot locations
     for i in range(0, len(robots)):
         sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)

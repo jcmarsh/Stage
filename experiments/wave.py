@@ -9,57 +9,63 @@ import time
 from playerc import *
 from stage_utils import *
 
-#client = None
-#pos = None
-#ran = None
-#gra = None
-#wav = None
-#goal = None
+class WaveCont:
+    client = None
+    pos = None
+    ran = None
+    gra = None
+    wav = None
+    goal = None
 
-#def init(robot_name):
-def go(robot_name):
-    print "INITING"
-    # Create client object
-    client = startup(("filler", robot_name), "run_temp.cfg")
-    pos, ran, gra = create_std(client)
+    def init(self, robot_name):
+        # Create client object
+        self.client = startup(("filler", robot_name), "run_temp.cfg")
+        self.pos, self.ran, self.gra = create_std(self.client)
 
-    # proxy for vfh+ local navigator
-    pla = playerc_planner(client, 0)
-    if pla.subscribe(PLAYERC_OPEN_MODE) != 0:
-        raise playerc_error_str()
+        # proxy for vfh+ local navigator
+        self.pla = playerc_planner(self.client, 0)
+        if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
+            raise playerc_error_str()
 
-    # proxy for wavefront planner
-    wav = playerc_planner(client, 1)
-    if wav.subscribe(PLAYERC_OPEN_MODE) != 0:
-        print "THIS FAILED!!!!!!!!!!!!!!!!!!!!!!!"
-        raise playerc_error_str()
+        # proxy for wavefront planner
+        self.wav = playerc_planner(self.client, 1)
+        if self.wav.subscribe(PLAYERC_OPEN_MODE) != 0:
+            raise playerc_error_str()
 
-    idt = client.read()
+        idt = self.client.read()
 
-    target_loc = search_pose("run_temp.world", "target0")
-    goal = Point(target_loc[0], target_loc[1])
-    print "DONE INITING"
+        target_loc = search_pose("run_temp.world", "target0")
+        self.goal = Point(target_loc[0], target_loc[1])
 
-#def run():
-    wav.enable(1)
-    wav.set_cmd_pose(goal.x, goal.y, 1)
+    def run(self):
+        self.wav.enable(1)
+        self.wav.set_cmd_pose(self.goal.x, self.goal.y, 1)
 
-    print "Pose: %f,%f" % (pos.px, pos.py)
+        #print "Pose: %f,%f" % (pos.px, pos.py)
 
-    prev_points = []
+        self.prev_points = []
 
-    while True:
-        idt = client.read()
+        while True:
+            idt = self.client.read()
     
-        prev_points.append(draw_all(gra, pos, Point(0,0), None, None, None, prev_points))
+            self.prev_points.append(draw_all(self.gra, self.pos, Point(0,0), None, None, None, self.prev_points))
 
-    print("DONE!")
+        print("DONE!")
 
-#def cleanup():
-    print "FINISH THE CLEANUP FUNCTION IN WAVE.PY (AND ALL OTHER CONTROLLERS FOR THAT MATTER)"
+    def cleanup(self):
+        print "IWASRUNOHMYGODTHISISSOEXCITING!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        self.pos.unsubscribe()
+        self.ran.unsubscribe()
+        self.gra.unsubscribe()
+        self.wav.unsubscribe()
+        self.client.disconnect()
 
-#def go(robot_name):
-#    init(robot_name)
-#    run()
-#    cleanup()
+    def __exit__(self, type, value, traceback):
+        self.cleanup()
+
+def go(robot_name):
+    controller = WaveCont()
+    controller.init(robot_name)
+    controller.run()
+    controller.cleanup()
 
