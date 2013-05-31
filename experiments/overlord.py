@@ -10,7 +10,6 @@ import shutil
 import subprocess
 import sys
 import time
-
 from playerc import *
 from stage_utils import *
 
@@ -73,7 +72,7 @@ if WriteCFG(new_cfg_name, config_file_name, map_file_name) != 0:
 # Enough is now known to start player.
 player_id = subprocess.Popen(["player", new_cfg_name])
 # Give the simulator a chance to startup
-time.sleep(2)
+time.sleep(4)
 
 # Robot information
 num_controllers = int(config.get("controllers", "num"))
@@ -135,7 +134,7 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
         if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
             finished = True
             print "TIMEOUT!"
-        time.sleep(.02)
+        time.sleep(.1)
 
     # Record results
     times.append((current_time - start_time) / time_scale)
@@ -149,7 +148,7 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
         sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)
 
     # Take a short break... see if that helps
-    time.sleep(.25)
+    time.sleep(1)
 
 print "OVER"
 print times
