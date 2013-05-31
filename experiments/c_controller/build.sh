@@ -1,0 +1,1 @@
+gcc -o simpleclient `pkg-config --cflags playerc` ptest.c `pkg-config --libs playerc`
