@@ -5,11 +5,13 @@
 # Facilitates the execution of many test runs
 
 import ConfigParser
+import multiprocessing
 import os
 import shutil
 import subprocess
 import sys
 import time
+import wave
 from playerc import *
 from stage_utils import *
 
@@ -123,7 +125,10 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     num_controllers = int(config.get("controllers", "num"))
     for i in range(0, len(robots)):
         print "Opening controller for %s" % (robots[i].name)
-        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
+        print "FIX THIS TO CALL THE CORRECT CONTROLLER"
+        #        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
+        robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank",))
+        robots[i].controller_p.start()
 
     # Test for whatever it is we are measuring
     finished = False
