@@ -5,13 +5,11 @@
 # Facilitates the execution of many test runs
 
 import ConfigParser
-import multiprocessing
 import os
 import shutil
 import subprocess
 import sys
 import time
-import wave
 from playerc import *
 from stage_utils import *
 
@@ -64,20 +62,7 @@ if WriteFloor(map_file_name) != 0:
 
 new_world_name = "run_temp.world"
 old_world_name = search_text_property(config_file_name, "worldfile")
-new_world_file = open(new_world_name, "w")
-old_world_file = open(old_world_name, "r")
-    
-for line in old_world_file:
-    new_world_file.write(line)
-old_world_file.close()
-
-new_world_file.write("\n\n")
-new_world_file.write("# The following was added by overload.py parsing the .ini experiment file.\n")
-for pair in config.items("worldfile"):
-    new_world_file.write(pair[0] + " " + pair[1] + "\n")
-new_world_file.write("\n")
-
-new_world_file.close()
+shutil.copyfile(old_world_name, new_world_name)
 
 new_cfg_name = "run_temp.cfg"
 if WriteCFG(new_cfg_name, config_file_name, map_file_name) != 0:
@@ -138,10 +123,8 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     num_controllers = int(config.get("controllers", "num"))
     for i in range(0, len(robots)):
         print "Opening controller for %s" % (robots[i].name)
-        print "FIX THIS TO CALL THE CORRECT CONTROLLER"
-        #        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
-        robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank",))
-        robots[i].controller_p.start()
+        #robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
+        robots[i].controller_p = subprocess.Popen([robots[i].controller_n, robots[i].name])
 
     # Test for whatever it is we are measuring
     finished = False
@@ -160,15 +143,14 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Shut down controllers
     for i in range(0, len(robots)):
         robots[i].controller_p.terminate()
-    for i in range(0, len(robots)):
-        robots[i].controller_p.join()
-
+    
     # Reset the robot locations
     for i in range(0, len(robots)):
         sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)
 
+    print "Run number %d completed, result: %f" % (run_num, times[len(times) - 1])
     # Take a short break... see if that helps
-    time.sleep(1)
+    time.sleep(2)
 
 print "OVER"
 print times

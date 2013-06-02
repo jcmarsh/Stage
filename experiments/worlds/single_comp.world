@@ -30,3 +30,5 @@ gridcar
 	localization_origin [0 0 0 0]
 	color "blue"
 )
+
+speedup 8
