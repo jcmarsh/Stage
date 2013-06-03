@@ -32,7 +32,7 @@ def WriteCFG(new_config_name, old_config_name, map_name):
     new_cfg.write("# of the world file specified in the experiment .ini\n")
     new_cfg.write("driver\n(\n")
     new_cfg.write("\tname \"stage\"\n")
-    new_cfg.write("\tprovides [ \"simulation:0\" ]\n")
+    new_cfg.write("\tprovides [ \"localhost:6665:simulation:0\" ]\n")
     new_cfg.write("\tplugin \"stageplugin\"\n")
     new_cfg.write("\tworldfile \"./run_temp.world\"\n)\n\n")
 

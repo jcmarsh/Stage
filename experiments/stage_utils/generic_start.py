@@ -14,6 +14,7 @@ def startup(args, cfg_file):
         robot_name = args[1]
         port = find_port_by_name(cfg_file, robot_name)
         
+    print "For %s, port: %d" % (robot_name, port)
     client = playerc_client(None, 'localhost', port)
 
     # connect

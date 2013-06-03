@@ -54,7 +54,7 @@ class WaveCont:
 
             idt = self.client.read()
     
-            self.prev_points.append(draw_all(self.gra, self.pos, Point(0,0), None, None, None, self.prev_points))
+            # self.prev_points.append(draw_all(self.gra, self.pos, Point(0,0), None, None, None, self.prev_points))
 
         print("DONE!")
 

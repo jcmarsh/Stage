@@ -164,8 +164,8 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     for i in range(0, len(robots)):
         robots[i].pipe_send.send("DIE")
     time.sleep(1)
-    for i in range(0, len(robots)):
-        robots[i].controller_p.terminate()
+#    for i in range(0, len(robots)):
+#        robots[i].controller_p.terminate()
     for i in range(0, len(robots)):
         robots[i].controller_p.join()
 
