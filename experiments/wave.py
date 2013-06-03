@@ -59,15 +59,11 @@ class WaveCont:
         print("DONE!")
 
     def cleanup(self):
-        print "IWASRUNOHMYGODTHISISSOEXCITING!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         self.pos.unsubscribe()
         self.ran.unsubscribe()
         self.gra.unsubscribe()
         self.wav.unsubscribe()
         self.client.disconnect()
-
-    def __exit__(self, type, value, traceback):
-        self.cleanup()
 
 def go(robot_name, pipe_in):
     controller = WaveCont()

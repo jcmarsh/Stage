@@ -155,7 +155,6 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
         if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
             finished = True
             print "TIMEOUT!"
-        time.sleep(.1)
 
     # Record results
     times.append((current_time - start_time) / time_scale)
@@ -163,7 +162,7 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Shut down controllers
     for i in range(0, len(robots)):
         robots[i].pipe_send.send("DIE")
-    time.sleep(1)
+    time.sleep(2)
 #    for i in range(0, len(robots)):
 #        robots[i].controller_p.terminate()
     for i in range(0, len(robots)):
@@ -174,11 +173,17 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
         sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)
 
     # Take a short break... see if that helps
-    time.sleep(1)
+    time.sleep(2)
 
 print "OVER"
 print times
 
+sim.unsubscribe()
+client.disconnect()
+
+time.sleep(1)
+player_id.terminate()
+print "SHUTDOWN COMPLETE"
 
 #####################################################################
 # Phase 3: Report
