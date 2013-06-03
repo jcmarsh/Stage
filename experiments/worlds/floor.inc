@@ -5,6 +5,6 @@ floorplan
 	name "grid"
 	size [16 16 .8]
 	pose [0 0 0 0]
-	bitmap "./bitmaps/simple_grid1.png"
+	bitmap "./worlds/./bitmaps/simple_grid1.png"
 )
 

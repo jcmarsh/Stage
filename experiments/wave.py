@@ -37,7 +37,7 @@ class WaveCont:
         target_loc = search_pose("run_temp.world", "target0")
         self.goal = Point(target_loc[0], target_loc[1])
 
-    def run(self):
+    def run(self, pipe_in):
         self.wav.enable(1)
         self.wav.set_cmd_pose(self.goal.x, self.goal.y, 1)
 
@@ -46,6 +46,12 @@ class WaveCont:
         self.prev_points = []
 
         while True:
+            if (pipe_in.poll() and pipe_in.recv() == "DIE"):
+                # Shutdown!
+                pipe_in.close()
+                self.cleanup()
+                break
+
             idt = self.client.read()
     
             self.prev_points.append(draw_all(self.gra, self.pos, Point(0,0), None, None, None, self.prev_points))
@@ -63,9 +69,8 @@ class WaveCont:
     def __exit__(self, type, value, traceback):
         self.cleanup()
 
-def go(robot_name):
+def go(robot_name, pipe_in):
     controller = WaveCont()
     controller.init(robot_name)
-    controller.run()
-    controller.cleanup()
+    controller.run(pipe_in)
 

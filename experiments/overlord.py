@@ -25,6 +25,8 @@ class Robot:
         self.name = name
         self.controller_n = controller
         self.controller_p = None
+        self.pipe_recieve = None
+        self.pipe_send = None
 
 def targetReached():
     for i in range(0, len(robots)):
@@ -63,7 +65,7 @@ if WriteFloor(map_file_name) != 0:
     exit()
 
 new_world_name = "run_temp.world"
-old_world_name = search_text_property(config_file_name, "worldfile")
+old_world_name = config.get("files", "world")
 new_world_file = open(new_world_name, "w")
 old_world_file = open(old_world_name, "r")
     
@@ -140,7 +142,8 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
         print "Opening controller for %s" % (robots[i].name)
         print "FIX THIS TO CALL THE CORRECT CONTROLLER"
         #        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
-        robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank",))
+        robots[i].pipe_recieve, robots[i].pipe_send = multiprocessing.Pipe(False)
+        robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank", robots[i].pipe_recieve, ))
         robots[i].controller_p.start()
 
     # Test for whatever it is we are measuring
@@ -158,6 +161,9 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     times.append((current_time - start_time) / time_scale)
 
     # Shut down controllers
+    for i in range(0, len(robots)):
+        robots[i].pipe_send.send("DIE")
+    time.sleep(1)
     for i in range(0, len(robots)):
         robots[i].controller_p.terminate()
     for i in range(0, len(robots)):

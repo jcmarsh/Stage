@@ -5,7 +5,7 @@
 
 define target model
 (
-	bitmap "bitmaps/circle.png"
+	bitmap "worlds/bitmaps/circle.png"
 	size [.1 .1 .1]
 	color "green"
 ) 
