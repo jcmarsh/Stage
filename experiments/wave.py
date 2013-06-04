@@ -16,6 +16,7 @@ class WaveCont:
     gra = None
     wav = None
     goal = None
+    STATE = "IDLE"
 
     def init(self, robot_name):
         # Create client object
@@ -38,23 +39,32 @@ class WaveCont:
         self.goal = Point(target_loc[0], target_loc[1])
 
     def run(self, pipe_in):
-        self.wav.enable(1)
-        self.wav.set_cmd_pose(self.goal.x, self.goal.y, 1)
-
         #print "Pose: %f,%f" % (pos.px, pos.py)
-
         self.prev_points = []
+        self.STATE = "IDLE"
 
         while True:
-            if (pipe_in.poll() and pipe_in.recv() == "DIE"):
+            if pipe_in.poll():
+                self.STATE = pipe_in.recv()
+
+            if self.STATE == "DIE":
                 # Shutdown!
                 pipe_in.close()
                 self.cleanup()
                 break
-
-            idt = self.client.read()
-    
-            # self.prev_points.append(draw_all(self.gra, self.pos, Point(0,0), None, None, None, self.prev_points))
+            elif self.STATE == "START":
+                self.wav.enable(1)
+                self.wav.set_cmd_pose(self.goal.x, self.goal.y, 1)
+                self.STATE = "GO"
+            elif self.STATE == "GO":
+                idt = self.client.read()
+                # self.prev_points.append(draw_all(self.gra, self.pos, Point(0,0), None, None, None, self.prev_points))
+            elif self.STATE == "RESET":
+                self.prev_points = []
+                self.wav.enable(0)
+                self.STATE = "IDLE"
+            elif self.STATE != "IDLE":
+                print "wave.py has recieved an improper state: %s" % (STATE)
 
         print("DONE!")
 

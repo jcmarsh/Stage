@@ -6,5 +6,5 @@ config.h
 *.pyc
 .DS_Store
 docsrc/stage
-experiments/floor.inc
+experiments/worlds/floor.inc
 run_temp*

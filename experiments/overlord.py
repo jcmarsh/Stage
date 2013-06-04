@@ -132,19 +132,25 @@ except (ConfigParser.NoOptionError, ValueError):
 
 #####################################################################
 # Phase 2: Run
+# Launch the .ini described controllers
+num_controllers = int(config.get("controllers", "num"))
+for i in range(0, len(robots)):
+    print "Opening controller for %s" % (robots[i].name)
+    print "FIX THIS TO CALL THE CORRECT CONTROLLER"
+    #        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
+    robots[i].pipe_recieve, robots[i].pipe_send = multiprocessing.Pipe(False)
+    robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank", robots[i].pipe_recieve, ))
+    robots[i].controller_p.start()
+    time.sleep(2)
+
 times = []
 for run_num in range (0, int(config.get("experiment", "runs"))):
     start_time = sim.get_time(0)
     current_time = start_time
-    # Launch the .ini described controllers
-    num_controllers = int(config.get("controllers", "num"))
+
+    # Start the controllers
     for i in range(0, len(robots)):
-        print "Opening controller for %s" % (robots[i].name)
-        print "FIX THIS TO CALL THE CORRECT CONTROLLER"
-        #        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
-        robots[i].pipe_recieve, robots[i].pipe_send = multiprocessing.Pipe(False)
-        robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank", robots[i].pipe_recieve, ))
-        robots[i].controller_p.start()
+        robots[i].pipe_send.send("START")
 
     # Test for whatever it is we are measuring
     finished = False
@@ -159,14 +165,9 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Record results
     times.append((current_time - start_time) / time_scale)
 
-    # Shut down controllers
+    # Reset the controllers
     for i in range(0, len(robots)):
-        robots[i].pipe_send.send("DIE")
-    time.sleep(2)
-#    for i in range(0, len(robots)):
-#        robots[i].controller_p.terminate()
-    for i in range(0, len(robots)):
-        robots[i].controller_p.join()
+        robots[i].pipe_send.send("RESET")
 
     # Reset the robot locations
     for i in range(0, len(robots)):
@@ -177,6 +178,13 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
 
 print "OVER"
 print times
+
+# Shut down controllers
+for i in range(0, len(robots)):
+    robots[i].pipe_send.send("DIE")
+time.sleep(2)
+for i in range(0, len(robots)):
+    robots[i].controller_p.join()
 
 sim.unsubscribe()
 client.disconnect()
