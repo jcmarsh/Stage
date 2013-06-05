@@ -118,7 +118,7 @@ if sim.subscribe(PLAYERC_OPEN_MODE) !=0:
 
 # Finally, set up experiment specific configuration
 # TODO: This could be cleaned up with a function.
-time_scale = 1000000
+time_scale = 1000000.0
 try:
     num_runs = int(config.get("experiment", "runs"))
 except (ConfigParser.NoOptionError, ValueError):
@@ -169,6 +169,7 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     for i in range(0, len(robots)):
         robots[i].pipe_send.send("RESET")
 
+    time.sleep(1)
     # Reset the robot locations
     for i in range(0, len(robots)):
         sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)
