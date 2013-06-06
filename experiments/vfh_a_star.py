@@ -8,74 +8,112 @@ import algs
 from playerc import *
 from stage_utils import *
 
-# Create client object
-client = startup(sys.argv, "run_temp.cfg")
-pos, ran, gra = create_std(client)
+class AStarCont:
+    client = None
+    pos = None
+    ran = None
+    gra = None
+    goal = None
+    offset = None
+    planner = None
+    grid_num = 32
 
-# proxy for vfh+ local navigator
-pla = playerc_planner(client, 0)
-if pla.subscribe(PLAYERC_OPEN_MODE) != 0:
-    raise playerc_error_str()
+    def init(self, robot_name):
+        # Create client object
+        self.client = startup(("filler", robot_name), "run_temp.cfg")
+        self.pos, self.ran, self.gra = create_std(self.client)
 
-client.read()
+        # proxy for vfh+ local navigator
+        self.pla = playerc_planner(self.client, 0)
+        if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
+            raise playerc_error_str()
 
-#offset = Point(pos.px + 8, pos.py + 8)
-target_loc = search_pose("run_temp.world", "target0")
-goal = Point(target_loc[0], target_loc[1])
-drive_type = search_text_property("gridcar.inc", "drive")
-offset = Point(8, 8)
+        self.client.read()
 
-print "The target is at: %.2f %.2f" % (goal.x, goal.y)
-print "The robot  is at: %.2f %.2f" % (pos.px, pos.py)
+        target_loc = search_pose("run_temp.world", "target0")
+        self.goal = Point(target_loc[0], target_loc[1])
+        self.offset = Point(8, 8)
+        
+#        print "The target is at: %.2f %.2f" % (self.goal.x, self.goal.y)
+#        print "The robot  is at: %.2f %.2f" % (self.pos.px, self.pos.py)
 
-speed = .2
+        self.planner = algs.a_star_planner(self.grid_num, self.offset)
 
-grid_num = 32
+    def add_obstacle(self, x, y):
+        # translate x and y to global coords
+        return self.planner.add_obstacle(trans_point_r_g(self.pos, Point(x, y)))
 
-interval = 16.0 / grid_num
-planner = algs.a_star_planner(grid_num, offset)
-replan = True
-
-def add_obstacle(x, y):
-    # translate x and y to global coords
-    return planner.add_obstacle(trans_point_r_g(pos, Point(x, y)))
-
-prev_points = []
-path = []
-c_waypoint = Point(0,0)
-while(True):
-    idt = client.read()
-
-    # check for obstacles, for a*
-    for i in range(0, ran.ranges_count):
-        # figure out location of the obstacle...
-        tao = (2 * math.pi * i) / ran.ranges_count
-        obs_x = ran.ranges[i] * math.cos(tao)
-        obs_y = ran.ranges[i] * math.sin(tao)
-        # obs_x and obs_y are relative to the robot, and I'm okay with that.
-        if add_obstacle(obs_x, obs_y):
-            replan = True
-
-    # reached waypoint?
-    if algs.gridify(Point(pos.px, pos.py), grid_num, offset) == algs.gridify(c_waypoint, grid_num, offset):
+    def run(self, pipe_in):
         replan = True
+        prev_points = []
+        path = []
+        c_waypoint = Point(0,0)
+        STATE = "IDLE"
 
-    print "Plan: %s" % (replan)
-    if replan:
-        print "Replanning."
-        replan = False
-        path = planner.plan(Point(pos.px, pos.py), goal)
+        while True:
+            if pipe_in.poll():
+                STATE = pipe_in.recv()
+                    
+            if STATE == "DIE":
+                pipe_in.close()
+                self.cleanup()
+                break
+            elif STATE == "START":
+                # FILL IN
+                STATE = "GO"
+            elif STATE == "GO":
+                idt = self.client.read()
 
-    # Should check if goal_node has been reached.
-    c_waypoint = path[1]
-    n_waypoint = path[2]
+                # check for obstacles, for a*
+                for i in range(0, self.ran.ranges_count):
+                    # figure out location of the obstacle...
+                    tao = (2 * math.pi * i) / self.ran.ranges_count
+                    obs_x = self.ran.ranges[i] * math.cos(tao)
+                    obs_y = self.ran.ranges[i] * math.sin(tao)
+                    # obs_x and obs_y are relative to the robot, and I'm okay with that.
+                    if self.add_obstacle(obs_x, obs_y):
+                        replan = True
 
-    theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
-    #print "Target pose: %f,%f:%f" % (c_waypoint.x, c_waypoint.y, theta)
+                # reached waypoint?
+                if algs.gridify(Point(self.pos.px, self.pos.py), self.grid_num, self.offset) == algs.gridify(c_waypoint, self.grid_num, self.offset):
+                    replan = True
 
-    pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
+#                    print "Plan: %s" % (replan)
+                if replan:
+#                        print "Replanning."
+                    replan = False
+                    path = self.planner.plan(Point(self.pos.px, self.pos.py), self.goal)
 
-    prev_points.append(draw_all(gra, pos, offset, grid_num, None, path, prev_points))
+                # Should check if goal_node has been reached.
+                c_waypoint = path[1]
+                n_waypoint = path[2]
 
-print("DONE!")
+                theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
+
+                self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
+
+                prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, path, prev_points))
+            elif STATE == "RESET":
+                prev_points = []
+                replan = True
+                c_waypoint = Point(0,0)
+                n_waypoint = Point(0,0) # Haha! It looks like an owl.
+                path = []
+                STATE = "IDLE"
+            elif STATE != "IDLE":
+                print "vfh_a_star.py have recieved an improper state: %s" % (STATE)
+
+        print("DONE!")
+
+    def cleanup(self):
+        self.pos.unsubscribe()
+        self.ran.unsubscribe()
+        self.gra.unsubscribe()
+        self.wav.unsubscribe()
+        self.client.disconnect()
+
+def go(robot_name, pipe_in):
+    controller = AStarCont()
+    controller.init(robot_name)
+    controller.run(pipe_in)
 

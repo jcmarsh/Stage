@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import wave
+import vfh_a_star
 from playerc import *
 from stage_utils import *
 
@@ -139,7 +140,8 @@ for i in range(0, len(robots)):
     print "FIX THIS TO CALL THE CORRECT CONTROLLER"
     #        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
     robots[i].pipe_recieve, robots[i].pipe_send = multiprocessing.Pipe(False)
-    robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank", robots[i].pipe_recieve, ))
+#    robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank", robots[i].pipe_recieve, ))
+    robots[i].controller_p = multiprocessing.Process(target=vfh_a_star.go, args=("hank", robots[i].pipe_recieve, ))
     robots[i].controller_p.start()
     time.sleep(2)
 
