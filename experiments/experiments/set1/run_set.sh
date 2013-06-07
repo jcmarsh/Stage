@@ -3,8 +3,8 @@
 # usage
 
 echo "First Experiment: ###############################"
-python overlord.py ./experiments/set0/single_wave_u.ini
+python overlord.py ./experiments/set1/single_a_star_u.ini
 echo "\n\nSecon Experiment: ###############################"
-python overlord.py ./experiments/set0/single_wave_g0.ini
+python overlord.py ./experiments/set1/single_a_star_g0.ini
 echo "\n\nThird Experiment: ###############################"
-python overlord.py ./experiments/set0/single_wave_g1.ini
+python overlord.py ./experiments/set1/single_a_star_g1.ini

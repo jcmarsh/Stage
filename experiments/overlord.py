@@ -11,8 +11,6 @@ import shutil
 import subprocess
 import sys
 import time
-import wave
-import vfh_a_star
 from playerc import *
 from stage_utils import *
 
@@ -24,7 +22,7 @@ class Robot:
         self.start_y = y
         self.start_a = a
         self.name = name
-        self.controller_n = controller
+        self.controller_i = controller
         self.controller_p = None
         self.pipe_recieve = None
         self.pipe_send = None
@@ -97,10 +95,11 @@ num_controllers = int(config.get("controllers", "num"))
 robots = []
 for i in range(0, num_controllers):
     controller_name = config.get("controllers", "cont" + str(i))
+    controller_imp = __import__(controller_name)
     robot_name = config.get("controllers", "name" + str(i))
     loc = search_pose(new_world_name, robot_name)
     print "We've got a robot: %s\t%s - (%f,%f)" % (robot_name, controller_name, loc[0], loc[1])
-    robots.append(Robot(robot_name, controller_name, loc[0], loc[1], 0))
+    robots.append(Robot(robot_name, controller_imp, loc[0], loc[1], 0))
 
 # Setup our controller
 client = playerc_client(None, 'localhost', 6665)
@@ -137,11 +136,8 @@ except (ConfigParser.NoOptionError, ValueError):
 num_controllers = int(config.get("controllers", "num"))
 for i in range(0, len(robots)):
     print "Opening controller for %s" % (robots[i].name)
-    print "FIX THIS TO CALL THE CORRECT CONTROLLER"
-    #        robots[i].controller_p = subprocess.Popen(["python", robots[i].controller_n, robots[i].name])
     robots[i].pipe_recieve, robots[i].pipe_send = multiprocessing.Pipe(False)
-#    robots[i].controller_p = multiprocessing.Process(target=wave.go, args=("hank", robots[i].pipe_recieve, ))
-    robots[i].controller_p = multiprocessing.Process(target=vfh_a_star.go, args=("hank", robots[i].pipe_recieve, ))
+    robots[i].controller_p = multiprocessing.Process(target=robots[i].controller_i.go, args=(robots[i].name, robots[i].pipe_recieve, ))
     robots[i].controller_p.start()
     time.sleep(2)
 
