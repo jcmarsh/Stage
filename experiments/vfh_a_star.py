@@ -16,7 +16,7 @@ class AStarCont:
     goal = None
     offset = None
     planner = None
-    grid_num = 32
+    grid_num = 16
 
     def init(self, robot_name):
         # Create client object
@@ -59,7 +59,8 @@ class AStarCont:
                 self.cleanup()
                 break
             elif STATE == "START":
-                # FILL IN
+                self.pla.enable(1)
+                
                 STATE = "GO"
             elif STATE == "GO":
                 idt = self.client.read()
@@ -75,12 +76,13 @@ class AStarCont:
                         replan = True
 
                 # reached waypoint?
-                if algs.gridify(Point(self.pos.px, self.pos.py), self.grid_num, self.offset) == algs.gridify(c_waypoint, self.grid_num, self.offset):
+                grid_pos = algs.gridify(Point(self.pos.px, self.pos.py), self.grid_num, self.offset)
+                grid_way = algs.gridify(c_waypoint, self.grid_num, self.offset)
+                if grid_pos == grid_way:
                     replan = True
 
-#                    print "Plan: %s" % (replan)
+#                print "Plan: %s" % (replan)
                 if replan:
-#                        print "Replanning."
                     replan = False
                     path = self.planner.plan(Point(self.pos.px, self.pos.py), self.goal)
 
@@ -95,6 +97,8 @@ class AStarCont:
                 prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, path, prev_points))
             elif STATE == "RESET":
                 prev_points = []
+                self.pla.enable(0)
+                self.planner = algs.a_star_planner(self.grid_num, self.offset)
                 replan = True
                 c_waypoint = Point(0,0)
                 n_waypoint = Point(0,0) # Haha! It looks like an owl.
