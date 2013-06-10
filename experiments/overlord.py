@@ -27,13 +27,17 @@ class Robot:
         self.pipe_recieve = None
         self.pipe_send = None
 
-def targetReached():
+def _dist(x1, y1, x2, y2):
+    return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2))
+
+
+def getDistances():
+    distances = []
     for i in range(0, len(robots)):
         pose = sim.get_pose2d(robots[i].name)
-        dist = math.sqrt(math.pow(7 - pose[1], 2) + math.pow(7 - pose[2], 2))
-        if dist < 1:
-            return True
-    return False
+        # TODO: The target location shouldn't be hard coded
+        distances.append(_dist(7, 7, pose[1], pose[2]))
+    return distances
 
 #####################################################################
 # Phase 1: Setup
@@ -152,8 +156,13 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
 
     # Test for whatever it is we are measuring
     finished = False
+    dists = []
     while (not(finished)):
-        finished = targetReached() # Is experiment complete?
+        dists = getDistances()
+        if min(dists) < 1: # The test is complete once any of the robots are within a meter of the target
+            finished = True
+        else:
+            finished = False
 
         current_time = sim.get_time(0)
         if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
@@ -161,7 +170,7 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
             print "TIMEOUT!"
 
     # Record results
-    times.append((current_time - start_time) / time_scale)
+    times.append(((current_time - start_time) / time_scale, dists))
 
     # Reset the controllers
     for i in range(0, len(robots)):
