@@ -1,0 +1,31 @@
+This was run with the new settings. Seems a bit better.
+./experiments/test1/conf_0.ini
+Time: 180.0	dist_0: 18.1154838078	
+Time: 180.1	dist_0: 18.2508196999	
+Time: 180.1	dist_0: 18.9079615893	
+
+./experiments/test1/conf_1.ini
+Time: 180.0	dist_0: 5.49934131111	
+Time: 180.0	dist_0: 11.6562884853	
+Time: 180.0	dist_0: 7.58575459312	
+
+./experiments/test1/conf_2.ini
+Time: 129.4	dist_0: 0.995547132487	
+Time: 116.7	dist_0: 0.981534654186	
+Time: 125.1	dist_0: 0.984983727224	
+
+./experiments/test1/conf_3.ini
+Time: 180.0	dist_0: 17.0252709869	
+Time: 180.0	dist_0: 18.3901333575	
+Time: 180.1	dist_0: 18.1957894823	
+
+./experiments/test1/conf_4.ini
+Time: 180.0	dist_0: 1.72373789859	
+Time: 142.0	dist_0: 0.991910037437	
+Time: 180.0	dist_0: 5.36663477337	
+
+./experiments/test1/conf_5.ini
+Time: 180.0	dist_0: 1.08803535359	
+Time: 126.8	dist_0: 0.996341330795	
+Time: 144.0	dist_0: 0.961348148098	
+

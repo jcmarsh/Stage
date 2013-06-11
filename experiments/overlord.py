@@ -43,21 +43,28 @@ def getDistances():
 # Phase 1: Setup
 # Argument should be the name of experiment description file
 def print_n_quit():
-    print 'usage: python overlord.py [experiment_description.ini]'
+    print 'usage: python overlord.py [experiment_description.ini] [results_file.txt]'
     exit()
 
-if len(sys.argv) < 2:
+if len(sys.argv) < 3:
     print_n_quit()
 
 experiment_desc = sys.argv[1]
 
 if os.path.splitext(experiment_desc)[1] != ".ini":
     print_n_quit()
-
 print "Provided description file: %s" % (experiment_desc)
 
+results_file_n = sys.argv[2]
+print "Results will be saved to: %s" % (results_file_n)
+try:
+    results_file = open(results_file_n, "a")
+except IOError:
+    print "Failed to open results file. Quiting."
+    print_n_quit()
+
 config = ConfigParser.ConfigParser()
-config.readfp(open(experiment_desc))
+config.readfp(open(experiment_desc)) # TODO: IOError here?
 
 config_file_name = config.get("files", "cfg")
 map_file_name = config.get("files", "map")
@@ -172,6 +179,7 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     # Record results
     times.append(((current_time - start_time) / time_scale, dists))
 
+
     # Reset the controllers
     for i in range(0, len(robots)):
         robots[i].pipe_send.send("RESET")
@@ -186,6 +194,13 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
 
 print "OVER"
 print times
+results_file.write(experiment_desc + "\n")
+for i in range(0, len(times)): # times is of the structure ((time, (dist0, dist1, ... distn)), ( ... )) I think.
+    results_file.write("Time: " + str(times[i][0]) + "\t")
+    for j in range(0, len(times[i][1])):
+        results_file.write("dist_" + str(j) + ": " + str(times[i][1][j]) + "\t")
+    results_file.write("\n")
+results_file.write("\n")
 
 # Shut down controllers
 for i in range(0, len(robots)):

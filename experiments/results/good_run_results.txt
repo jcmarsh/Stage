@@ -1,0 +1,31 @@
+This was run with the default options for vfh and wavefront
+./experiments/test1/conf_0.ini
+Time: 180.0	dist_0: 18.018651795	
+Time: 180.0	dist_0: 18.0119946021	
+Time: 180.0	dist_0: 18.0439008172	
+
+./experiments/test1/conf_1.ini
+Time: 180.0	dist_0: 16.3076946523	
+Time: 180.0	dist_0: 5.43027675155	
+Time: 142.6	dist_0: 0.989689056514	
+
+./experiments/test1/conf_2.ini
+Time: 180.0	dist_0: 5.16530326096	
+Time: 123.8	dist_0: 0.998931941567	
+Time: 123.8	dist_0: 0.983928556535	
+
+./experiments/test1/conf_3.ini
+Time: 180.0	dist_0: 18.0010440112	
+Time: 180.0	dist_0: 18.014502386	
+Time: 180.0	dist_0: 18.0263662948	
+
+./experiments/test1/conf_4.ini
+Time: 180.0	dist_0: 16.2398895762	
+Time: 180.0	dist_0: 15.432896453	
+Time: 180.1	dist_0: 5.21011913612	
+
+./experiments/test1/conf_5.ini
+Time: 180.0	dist_0: 10.6738926223	
+Time: 180.0	dist_0: 11.0339104938	
+Time: 180.0	dist_0: 11.0349095492	
+
