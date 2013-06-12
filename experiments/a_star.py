@@ -16,14 +16,16 @@ class AStarCont:
     goal = None
     offset = None
     planner = None
-    grid_num = 16
+    # So many shit problems. If you raise this, then the local navigator fails, because the waypoints are too close.
+    # Which begs the question, why am I using vfh? Why not artificial potential?
+    grid_num = 32
 
     def init(self, robot_name):
         # Create client object
         self.client = startup(("filler", robot_name), "run_temp.cfg")
         self.pos, self.ran, self.gra = create_std(self.client)
 
-        # proxy for vfh+ local navigator
+        # proxy for the local navigator
         self.pla = playerc_planner(self.client, 0)
         if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
             raise playerc_error_str()

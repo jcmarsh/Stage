@@ -356,6 +356,11 @@ void ArtPotDriver::DoOneUpdate() {
   vel = max_speed * sqrt(pow(delta_x, 2) + pow(delta_y, 2));
   rot_vel = max_speed * atan2(delta_y, delta_x);
 
+  // TODO: This needs to be tested. Actually, it all needs to be tested!
+  if (abs(atan2(delta_y, delta_x)) > (M_PI / 2)) {
+    vel = 0;
+  }
+
   this->PutCommand(vel, rot_vel);
 }
 
