@@ -1,0 +1,36 @@
+./experiments/final_wave0/conf_0.ini
+Time: 180.0	dist_0: 13.6986128461	
+Time: 180.0	dist_0: 13.6489947074	
+Time: 180.0	dist_0: 13.5589792063	
+Time: 180.0	dist_0: 13.4594772611	
+Time: 180.0	dist_0: 10.0831119991	
+Time: 180.0	dist_0: 12.8462459838	
+Time: 180.0	dist_0: 8.41318383995	
+Time: 180.0	dist_0: 15.2415489703	
+Time: 180.0	dist_0: 14.4341426669	
+Time: 180.0	dist_0: 11.557770899	
+
+./experiments/final_wave0/conf_1.ini
+Time: 180.0	dist_0: 13.3298267805	
+Time: 180.0	dist_0: 7.01155376702	
+Time: 180.0	dist_0: 17.7054377674	
+Time: 180.0	dist_0: 17.4486950378	
+Time: 180.0	dist_0: 17.7712178807	
+Time: 180.0	dist_0: 11.3303669273	
+Time: 180.0	dist_0: 11.4179009894	
+Time: 180.0	dist_0: 18.1066656275	
+Time: 180.0	dist_0: 17.2108279576	
+Time: 180.0	dist_0: 17.2568472874	
+
+./experiments/final_wave0/conf_2.ini
+Time: 180.0	dist_0: 13.2520502646	
+Time: 180.0	dist_0: 17.0229697081	
+Time: 180.0	dist_0: 4.51639354012	
+Time: 180.0	dist_0: 17.0157688594	
+Time: 180.0	dist_0: 10.6393360153	
+Time: 180.0	dist_0: 10.4980713817	
+Time: 180.0	dist_0: 10.5397331765	
+Time: 180.0	dist_0: 10.9581108465	
+Time: 180.0	dist_0: 4.47781162832	
+Time: 180.0	dist_0: 10.4464303705	
+
