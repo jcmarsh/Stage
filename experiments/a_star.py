@@ -107,7 +107,7 @@ class AStarCont:
                 path = []
                 STATE = "IDLE"
             elif STATE != "IDLE":
-                print "vfh_a_star.py have recieved an improper state: %s" % (STATE)
+                print "a_star.py have recieved an improper state: %s" % (STATE)
 
         print("DONE!")
 

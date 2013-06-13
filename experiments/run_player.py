@@ -27,7 +27,7 @@ if path.splitext(config_name)[1] != ".cfg" or path.splitext(map_name)[1] != ".pn
 
 print "Provided filename: ", map_name
 
-if WriteFloor(map_name) != 0:
+if WriteFloorOld(map_name) != 0:
     print "Failed to write floor.inc"
     exit()
 
