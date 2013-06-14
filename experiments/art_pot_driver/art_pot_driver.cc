@@ -251,6 +251,14 @@ int ArtPotDriver::ProcessMessage(QueuePointer & resp_queue,
     this->active_goal = false;
 
     return 0;
+  } else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ, 
+				   PLAYER_PLANNER_REQ_ENABLE,
+				   this->planner_id)) {
+    player_planner_enable_req_t *cmd_enable = (player_planner_enable_req_t *) data;
+    this->cmd_state = cmd_enable->state;
+    this->Publish(this->planner_id, resp_queue, 
+		  PLAYER_MSGTYPE_RESP_ACK, PLAYER_PLANNER_REQ_ENABLE);
+    return 0;				   
   } else if(Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ, -1, this->position_id)) {
     // Pass the request on to the underlying position device and wait for
     // the reply.
@@ -265,7 +273,7 @@ int ArtPotDriver::ProcessMessage(QueuePointer & resp_queue,
       PLAYER_WARN1("failed to forward config request with subtype: %d\n",
                    hdr->subtype);
       return(-1);
-    }
+    } 
 
     player_msghdr_t* rephdr = msg->GetHeader();
     void* repdata = msg->GetPayload();
@@ -322,12 +330,12 @@ void ArtPotDriver::DoOneUpdate() {
     delta_x = 0;
     delta_y = 0;
   } else if (goal_radius <= dist and dist <= goal_extent + goal_radius) {
-    v = goal_scale * (dist - goal_radius);
-    delta_x = v * cos(theta);
-    delta_y = v * sin(theta);
-    total_factors += 1;
+      v = goal_scale * (dist - goal_radius);
+      delta_x = v * cos(theta);
+      delta_y = v * sin(theta);
+      total_factors += 1;
   } else {
-    v = goal_scale * goal_extent;
+    v = goal_scale; //* goal_extent;
     delta_x = v * cos(theta);
     delta_y = v * sin(theta);
     total_factors += 1;
@@ -357,9 +365,9 @@ void ArtPotDriver::DoOneUpdate() {
   rot_vel = max_speed * atan2(delta_y, delta_x);
 
   // TODO: This needs to be tested. Actually, it all needs to be tested!
-  if (abs(atan2(delta_y, delta_x)) > (M_PI / 2)) {
-    vel = 0;
-  }
+  //  if (abs(atan2(delta_y, delta_x)) > (M_PI / 2)) {
+  //    vel = 0;
+  //  }
 
   this->PutCommand(vel, rot_vel);
 }

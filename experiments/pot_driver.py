@@ -28,7 +28,7 @@ class Pot:
         if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
             raise playerc_error_str()
 
-        client.read()
+        self.client.read()
 
         target_loc = search_pose("run_temp.world", "target0")
         self.goal = Point(target_loc[0], target_loc[1])
@@ -46,13 +46,15 @@ class Pot:
                 pipe_in.close()
                 self.cleanup()
             elif STATE == "START":
+                self.pla.enable(0)
                 STATE = "GO"
-            elif STATE = "GO":
-                idt = client.read()
+            elif STATE == "GO":
+                idt = self.client.read()
 
-                pla.set_cmd_pose(goal.x, goal.y, 0)
+                self.pla.set_cmd_pose(self.goal.x, self.goal.y, 0)
                 prev_points.append(draw_all(self.gra, self.pos, self.offset, None, None, None, prev_points))
             elif STATE == "RESET":
+                prev_points = []
                 self.pla.enable(0)
                 STATE = "IDLE"
             elif STATE != "IDLE":
