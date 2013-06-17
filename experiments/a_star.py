@@ -89,13 +89,15 @@ class AStarCont:
                     path = self.planner.plan(Point(self.pos.px, self.pos.py), self.goal)
 
                 # Should check if goal_node has been reached.
-                c_waypoint = path[1]
-                n_waypoint = path[2]
+                if path == None:
+                    print "Well, shit. I've got nothing."
+                else:
+                    c_waypoint = path[1]
+                    n_waypoint = path[2]
 
-                theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
+                    theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
 
-                print "And the lucky waypoint is: (%f, %f): %f" % (c_waypoint.x, c_waypoint.y, theta)
-                self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
+                    self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
 
                 prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, path, prev_points))
             elif STATE == "RESET":

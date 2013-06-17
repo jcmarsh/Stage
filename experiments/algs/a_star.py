@@ -5,12 +5,16 @@ from stage_utils import Point
 map_size = 16.0
 
 class node:
-    def __init__(self, x, y, cost_to):
+    def __init__(self, x, y, g_score):
         self.x = x
         self.y = y
-        self.cost_to = cost_to
-        self.cost_est = 10000 # cost_to + estimated cost to goal (10000 = infinity)
+        self.g_score = g_score
+        # cost_est is held by the heap
+        # self.cost_est = 10000 # g_score + estimated cost to goal (10000 = infinity)
         self.back_link = None
+
+    def __str__(self):
+        return "(" + str(self.x) + ", " + str(self.y) + ") " + str(self.g_score)
 
     # Scotty overrode __eq__ and I want to be just like him.
     def __eq__(self, o):
@@ -66,21 +70,23 @@ class a_star_planner:
     # Hmm......
     def _gen_neighbors(self, n):
         # one node in each of the 8 directions of a grid.
+        # print n
         neighbors = []
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if 0 <= n.x + i and n.x + i < self.grid_num and 0 <= n.y + j and n.y + j < self.grid_num:
                     if not i == j == 0: # 8 neighbors
                         if i == j or i == -j:
-                            new_node0 = node(n.x + i, n.y, 0)
-                            new_node1 = node(n.x, n.y + j, 0)
+                            # Diagonal neighbor. Make sure way is blocked on either side.
                             if not self.obstacles[n.x + i][n.y] or not self.obstacles[n.x][n.y + j]:
-                                new_node = node(n.x + i, n.y + j, n.cost_to + 1.414)
+                                new_node = node(n.x + i, n.y + j, n.g_score + 1.414) # I am dubious
                                 if not self.obstacles[n.x + i][n.y + j]:
+                                    # print new_node
                                     neighbors.append(new_node)
                         else:
-                            new_node = node(n.x + i, n.y + j, n.cost_to + 1)
+                            new_node = node(n.x + i, n.y + j, n.g_score + 1) # hold on... we assume 1?
                             if not self.obstacles[n.x + i][n.y + j]:
+                                # print new_node
                                 neighbors.append(new_node)
         return neighbors
 
@@ -96,6 +102,7 @@ class a_star_planner:
 
     # Modeled from the Wikipedia page.
     def plan(self, start_p, goal_p):
+        print "PLAN MOTHER FUCKER."
         s_g = gridify(start_p, self.grid_num, self.offset)
         g_g = gridify(goal_p, self.grid_num, self.offset)
         start = node(s_g.x, s_g.y, 0)
@@ -110,15 +117,17 @@ class a_star_planner:
             if c_node == goal:
                 return self._reconstruct_path(c_node)
         
-            c_node.cost_est = c_cost
+            # c_node.cost_est = c_cost
             closed_set.append(c_node)
 
             for n in self._gen_neighbors(c_node):
-                tent_g_score = c_node.cost_to + self._est_dist(n, c_node)
+                tent_g_score = c_node.g_score + self._est_dist(n, c_node)
                 try:
-                    index = closed_set.index(n)
-                    if tent_g_score < closed_set[index].cost_to:
-                        closed_set[index].cost_to = tent_g_score
+                    index = closed_set.index(n) # in closed set
+                    if tent_g_score >= n.g_score:
+                        continue
+                    else: # TODO: obviously.
+                        closed_set[index].g_score = tent_g_score
                         closed_set[index].back_link = c_node
                         continue
                 except ValueError:
@@ -130,6 +139,11 @@ class a_star_planner:
                         found = True
                         break
             
-                if not found:
+                if not found or tent_g_score < n.g_score:
+                    n.g_score = tent_g_score
                     n.back_link = c_node
+                    print "Push it! %f, %s" % (tent_g_score + self._est_dist(n, goal), str(n))
                     heapq.heappush(open_set, (tent_g_score + self._est_dist(n, goal), n))
+
+        print "Failed! No path"
+        return None
