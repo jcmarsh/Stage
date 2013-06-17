@@ -36,7 +36,7 @@ def getDistances():
     for i in range(0, len(robots)):
         pose = sim.get_pose2d(robots[i].name)
         # TODO: The target location shouldn't be hard coded
-        distances.append(_dist(7, 7, pose[1], pose[2]))
+        distances.append(_dist(-7, 7, pose[1], pose[2]))
     return distances
 
 #####################################################################
@@ -166,7 +166,7 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
     dists = []
     while (not(finished)):
         dists = getDistances()
-        if min(dists) < 1: # The test is complete once any of the robots are within a meter of the target
+        if min(dists) < .25: # The test is complete once any of the robots are within a meter of the target
             finished = True
         else:
             finished = False

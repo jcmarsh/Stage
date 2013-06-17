@@ -66,7 +66,6 @@ class Pot:
         self.pos.unsubscribe()
         self.ran.unsubscribe()
         self.gra.unsubscribe()
-        self.wav.unsubscribe()
         self.client.disconnect()
 
 def go(robot_name, pipe_in):

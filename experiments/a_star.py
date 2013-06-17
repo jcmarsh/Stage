@@ -18,7 +18,7 @@ class AStarCont:
     planner = None
     # So many shit problems. If you raise this, then the local navigator fails, because the waypoints are too close.
     # Which begs the question, why am I using vfh? Why not artificial potential?
-    grid_num = 32
+    grid_num = 24
 
     def init(self, robot_name):
         # Create client object
@@ -94,6 +94,7 @@ class AStarCont:
 
                 theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
 
+                print "And the lucky waypoint is: (%f, %f): %f" % (c_waypoint.x, c_waypoint.y, theta)
                 self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
 
                 prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, path, prev_points))
