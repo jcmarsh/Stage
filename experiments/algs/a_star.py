@@ -49,7 +49,6 @@ class a_star_planner:
     # Euclidean distance
     def _est_dist(self, a, b):
         dist = math.sqrt(math.pow(a.x - b.x, 2) + math.pow(a.y - b.y, 2))
-        # print "(%f,%f) -> (%f,%f): %f" % (a.x, a.y, b.x, b.y, dist)
         return dist
 
     def add_obstacle(self, loc):
@@ -70,7 +69,6 @@ class a_star_planner:
     # Hmm......
     def _gen_neighbors(self, n):
         # one node in each of the 8 directions of a grid.
-        # print n
         neighbors = []
         for i in range(-1, 2):
             for j in range(-1, 2):
@@ -79,14 +77,12 @@ class a_star_planner:
                         if i == j or i == -j:
                             # Diagonal neighbor. Make sure way is blocked on either side.
                             if not self.obstacles[n.x + i][n.y] or not self.obstacles[n.x][n.y + j]:
-                                new_node = node(n.x + i, n.y + j, n.g_score + 1.414) # I am dubious
+                                new_node = node(n.x + i, n.y + j, n.g_score + 1.414) # units the number of grid spaces
                                 if not self.obstacles[n.x + i][n.y + j]:
-                                    # print new_node
                                     neighbors.append(new_node)
                         else:
-                            new_node = node(n.x + i, n.y + j, n.g_score + 1) # hold on... we assume 1?
+                            new_node = node(n.x + i, n.y + j, n.g_score + 1) # see comment above
                             if not self.obstacles[n.x + i][n.y + j]:
-                                # print new_node
                                 neighbors.append(new_node)
         return neighbors
 
@@ -102,7 +98,6 @@ class a_star_planner:
 
     # Modeled from the Wikipedia page.
     def plan(self, start_p, goal_p):
-        print "PLAN MOTHER FUCKER."
         s_g = gridify(start_p, self.grid_num, self.offset)
         g_g = gridify(goal_p, self.grid_num, self.offset)
         start = node(s_g.x, s_g.y, 0)
@@ -126,7 +121,7 @@ class a_star_planner:
                     index = closed_set.index(n) # in closed set
                     if tent_g_score >= n.g_score:
                         continue
-                    else: # TODO: obviously.
+                    else:
                         closed_set[index].g_score = tent_g_score
                         closed_set[index].back_link = c_node
                         continue
@@ -142,8 +137,7 @@ class a_star_planner:
                 if not found or tent_g_score < n.g_score:
                     n.g_score = tent_g_score
                     n.back_link = c_node
-                    print "Push it! %f, %s" % (tent_g_score + self._est_dist(n, goal), str(n))
                     heapq.heappush(open_set, (tent_g_score + self._est_dist(n, goal), n))
 
-        print "Failed! No path"
+#        print "Failed! No path"
         return None

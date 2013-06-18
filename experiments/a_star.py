@@ -18,7 +18,7 @@ class AStarCont:
     planner = None
     # So many shit problems. If you raise this, then the local navigator fails, because the waypoints are too close.
     # Which begs the question, why am I using vfh? Why not artificial potential?
-    grid_num = 24
+    grid_num = 32
 
     def init(self, robot_name):
         # Create client object
@@ -90,14 +90,19 @@ class AStarCont:
 
                 # Should check if goal_node has been reached.
                 if path == None:
-                    print "Well, shit. I've got nothing."
-                else:
+                    # attempt to reset the planner.
+                    self.planner = algs.a_star_planner(self.grid_num, self.offset)
+                elif len(path) > 2: 
                     c_waypoint = path[1]
                     n_waypoint = path[2]
-
                     theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
-
                     self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
+                elif len(path) > 1:
+                    # Only one waypoint left
+                    c_waypoint = path[1]
+                    theta = self.pos.pa
+                    self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
+                # No else, should be finished by now.
 
                 prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, path, prev_points))
             elif STATE == "RESET":

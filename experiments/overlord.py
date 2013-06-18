@@ -36,7 +36,7 @@ def getDistances():
     for i in range(0, len(robots)):
         pose = sim.get_pose2d(robots[i].name)
         # TODO: The target location shouldn't be hard coded
-        distances.append(_dist(-7, 7, pose[1], pose[2]))
+        distances.append(_dist(7, 7, pose[1], pose[2]))
     return distances
 
 #####################################################################

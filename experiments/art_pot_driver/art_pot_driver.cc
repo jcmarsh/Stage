@@ -527,21 +527,15 @@ void ArtPotDriver::PutCommand(double cmd_speed, double cmd_turnrate)
 // Check for new commands from the server
 void ArtPotDriver::ProcessCommand(player_msghdr_t* hdr, player_position2d_cmd_pos_t &cmd)
 {
-  int x,y,t;
-
-  x = cmd.pos.px; //(int)rint(cmd.pos.px * 1e3);
-  y = cmd.pos.py; //(int)rint(cmd.pos.py * 1e3);
-  t = cmd.pos.pa; //(int)rint(RTOD(cmd.pos.pa));
-
   this->cmd_type = 1;
   this->cmd_state = cmd.state;
 
-  if((x != this->goal_x) || (y != this->goal_y) || (t != this->goal_t))
+  if((cmd.pos.px != this->goal_x) || (cmd.pos.py != this->goal_y) || (cmd.pos.pa != this->goal_t))
   {
     this->active_goal = true;
-    this->goal_x = x;
-    this->goal_y = y;
-    this->goal_t = t;
+    this->goal_x = cmd.pos.px;
+    this->goal_y = cmd.pos.py;
+    this->goal_t = cmd.pos.pa;
 
     if(this->planner)
     {
