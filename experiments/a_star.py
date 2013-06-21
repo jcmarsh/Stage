@@ -83,14 +83,12 @@ class AStarCont:
                 if grid_pos == grid_way:
                     replan = True
 
-#                print "Plan: %s" % (replan)
                 if replan:
                     replan = False
                     path = self.planner.plan(Point(self.pos.px, self.pos.py), self.goal)
 
-                # Should check if goal_node has been reached.
                 if path == None:
-                    # attempt to reset the planner.
+                    # Reset the planner.
                     self.planner = algs.a_star_planner(self.grid_num, self.offset)
                 elif len(path) > 2: 
                     c_waypoint = path[1]
@@ -123,7 +121,6 @@ class AStarCont:
         self.pos.unsubscribe()
         self.ran.unsubscribe()
         self.gra.unsubscribe()
-        self.wav.unsubscribe()
         self.client.disconnect()
 
 def go(robot_name, pipe_in):
