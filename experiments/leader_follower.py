@@ -8,6 +8,10 @@ import algs
 from playerc import *
 from stage_utils import *
 
+class Follower:
+
+class Leader:
+
 # Create client object
 client = startup(sys.argv, "run_temp.cfg")
 pos, ran, gra = create_std(client)
