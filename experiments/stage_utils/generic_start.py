@@ -43,7 +43,7 @@ def create_std(client):
     # get the geometry
     if pos.get_geom() != 0:
         raise playerc_error_str()
-    print "Robot size: (%.3f,%.3f)" % (pos.size[0], pos.size[1])
+#    print "Robot size: (%.3f,%.3f)" % (pos.size[0], pos.size[1])
 
     return pos, ran, gra
 

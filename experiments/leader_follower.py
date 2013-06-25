@@ -8,18 +8,30 @@ import algs
 from playerc import *
 from stage_utils import *
 
-class Follower:
-
 class Leader:
+    role = None
 
-# Create client object
-client = startup(sys.argv, "run_temp.cfg")
-pos, ran, gra = create_std(client)
+    client = None
+    pos = None
+    ran = None
+    gra = None
+    pla = None
 
-# proxy for art_pot local navigator
-pla = playerc_planner(client, 0)
-if pla.subscribe(PLAYERC_OPEN_MODE) != 0:
-    raise playerc_error_str()
+    planner = None
+    goal = None
+    offset = None
+    
+    def init(self, robot_name):
+        self.client = startup(("filler", robot_name), "run_temp.cfg")
+        self.pos, self.ran, self.gra = create_std(self.client)
+
+        # proxy for the local navigator
+        self.pla = playerc_planner(self.client, 0)
+        if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
+            raise playerc_error_str()
+
+        self.client.read()
+
 
 # First follower, frank
 client1 = playerc_client(None, 'localhost', 6666)

@@ -13,11 +13,11 @@ class AStarCont:
     pos = None
     ran = None
     gra = None
+    pla = None
     goal = None
     offset = None
     planner = None
-    # So many shit problems. If you raise this, then the local navigator fails, because the waypoints are too close.
-    # Which begs the question, why am I using vfh? Why not artificial potential?
+
     grid_num = 32
 
     def init(self, robot_name):
