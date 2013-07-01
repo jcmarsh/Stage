@@ -51,7 +51,21 @@ class LeaderCont:
         while True:
             if pipe_in.poll():
                 STATE = pipe_in.recv()
-                    
+                
+            if STATE == "DIE":
+                self.state_die()
+                break
+            elif STATE == "START":
+                self.state_start()
+                STATE = "GO"
+            elif STATE == "GO":
+                self.state_go()
+            elif STATE == "RESET":
+                self.state_reset()
+                STATE = "IDLE"
+            elif STATE != "IDLE":
+                print "leader.py have recieved an improper state: %s" % (STATE)
+
             if STATE == "DIE":
                 pipe_in.close()
                 self.cleanup()
@@ -85,10 +99,12 @@ class LeaderCont:
         print("DONE!")
 
     def cleanup(self):
+        # TODO: Do I need to clean up the planner?
+        pipe_in.close()
         self.pos.unsubscribe()
         self.ran.unsubscribe()
         self.gra.unsubscribe()
-        self.pla.unsubscribe()
+        self.pla.unsubscribe() 
         self.client.disconnect()
 
 def go(robot_name, pipe_in):
