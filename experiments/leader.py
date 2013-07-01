@@ -5,10 +5,11 @@
 import math
 import sys
 import algs
+import a_star
 from playerc import *
 from stage_utils import *
 
-class Leader:
+class LeaderCont:
     #    role = None
 
     ''' 
@@ -26,32 +27,16 @@ class Leader:
     Require two files, given the way overlord works right now.
     '''
     followers = []
-
-    client = None
-    pos = None
-    ran = None
-    gra = None
-    pla = None
+    a_star_cont = None
 
     planner = None
     goal = None
     offset = None
     
     def init(self, robot_name):
-        self.client = startup(("filler", robot_name), "run_temp.cfg")
-        self.pos, self.ran, self.gra = create_std(self.client)
-
-        # proxy for the local navigator
-        self.pla = playerc_planner(self.client, 0)
-        if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
-            raise playerc_error_str()
-
-        self.client.read()
-
-        # run_temp.world is the script generated .world file. For now we only support one target.
-        target_loc = search_pose("run_temp.world", "target0")
-        self.goal = Point(target_loc[0], target_loc[1])
-        self.offset = Point(8, 8)
+        # A* controller for lead robot
+        a_star_cont = AStarCont()
+        a_star_cont.init(robot_name)
 
     def add_follower(follower):
         followers.append(follower)
@@ -60,10 +45,11 @@ class Leader:
 
     def run(self, pipe_in):
         prev_points = []
+        path = []
         STATE = "IDLE"
 
         while True:
-                        if pipe_in.poll():
+            if pipe_in.poll():
                 STATE = pipe_in.recv()
                     
             if STATE == "DIE":
@@ -71,8 +57,7 @@ class Leader:
                 self.cleanup()
                 break
             elif STATE == "START":
-                self.pla.enable(1) # TODO: See if this is actually needed / used.
-                
+                self.pla.enable(1)
                 STATE = "GO"
             elif STATE == "GO":
                 idt = self.client.read()
@@ -107,7 +92,7 @@ class Leader:
         self.client.disconnect()
 
 def go(robot_name, pipe_in):
-    controller = ExampleCont()
+    controller = LeaderCont()
     controller.init(robot_name)
     controller.run(pipe_in)
 

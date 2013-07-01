@@ -45,6 +45,66 @@ class AStarCont:
         # translate x and y to global coords
         return self.planner.add_obstacle(trans_point_r_g(self.pos, Point(x, y)))
 
+    def state_die():
+        pipe_in.close()
+        self.pos.unsubscribe()
+        self.ran.unsubscribe()
+        self.gra.unsubscribe()
+        self.pla.unsubscribe()
+        self.client.disconnect()
+
+    def state_start():
+        self.pla.enable(1)
+
+    def state_go():
+        idt = self.client.read()
+
+        # check for obstacles, for a*
+        for i in range(0, self.ran.ranges_count):
+            # figure out location of the obstacle...
+            tao = (2 * math.pi * i) / self.ran.ranges_count
+            obs_x = self.ran.ranges[i] * math.cos(tao)
+            obs_y = self.ran.ranges[i] * math.sin(tao)
+            # obs_x and obs_y are relative to the robot, and I'm okay with that.
+            if self.add_obstacle(obs_x, obs_y):
+                replan = True
+
+            # reached waypoint?
+            grid_pos = algs.gridify(Point(self.pos.px, self.pos.py), self.grid_num, self.offset)
+            grid_way = algs.gridify(c_waypoint, self.grid_num, self.offset)
+            if grid_pos == grid_way:
+                replan = True
+
+            if replan:
+                replan = False
+                path = self.planner.plan(Point(self.pos.px, self.pos.py), self.goal)
+
+            if path == None:
+                # Reset the planner.
+                self.planner = algs.a_star_planner(self.grid_num, self.offset)
+            elif len(path) > 2: 
+                c_waypoint = path[1]
+                n_waypoint = path[2]
+                theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
+                self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
+            elif len(path) > 1:
+                # Only one waypoint left
+                c_waypoint = path[1]
+                theta = self.pos.pa
+                self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
+            # No else, should be finished by now.
+
+            self.prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, self.path, self.prev_points))
+
+    def state_reset():
+        self.prev_points = []
+        self.pla.enable(0)
+        self.planner = algs.a_star_planner(self.grid_num, self.offset)
+        self.replan = True
+        self.c_waypoint = Point(0,0)
+        self.n_waypoint = Point(0,0) # Haha! It looks like an owl.
+        self.path = []
+
     def run(self, pipe_in):
         replan = True
         prev_points = []
@@ -57,71 +117,20 @@ class AStarCont:
                 STATE = pipe_in.recv()
                     
             if STATE == "DIE":
-                pipe_in.close()
-                self.cleanup()
+                self.state_die()
                 break
             elif STATE == "START":
-                self.pla.enable(1)
-                
+                self.state_start()
                 STATE = "GO"
             elif STATE == "GO":
-                idt = self.client.read()
-
-                # check for obstacles, for a*
-                for i in range(0, self.ran.ranges_count):
-                    # figure out location of the obstacle...
-                    tao = (2 * math.pi * i) / self.ran.ranges_count
-                    obs_x = self.ran.ranges[i] * math.cos(tao)
-                    obs_y = self.ran.ranges[i] * math.sin(tao)
-                    # obs_x and obs_y are relative to the robot, and I'm okay with that.
-                    if self.add_obstacle(obs_x, obs_y):
-                        replan = True
-
-                # reached waypoint?
-                grid_pos = algs.gridify(Point(self.pos.px, self.pos.py), self.grid_num, self.offset)
-                grid_way = algs.gridify(c_waypoint, self.grid_num, self.offset)
-                if grid_pos == grid_way:
-                    replan = True
-
-                if replan:
-                    replan = False
-                    path = self.planner.plan(Point(self.pos.px, self.pos.py), self.goal)
-
-                if path == None:
-                    # Reset the planner.
-                    self.planner = algs.a_star_planner(self.grid_num, self.offset)
-                elif len(path) > 2: 
-                    c_waypoint = path[1]
-                    n_waypoint = path[2]
-                    theta = math.atan2(n_waypoint.y - c_waypoint.y, n_waypoint.x - c_waypoint.x)
-                    self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
-                elif len(path) > 1:
-                    # Only one waypoint left
-                    c_waypoint = path[1]
-                    theta = self.pos.pa
-                    self.pla.set_cmd_pose(c_waypoint.x, c_waypoint.y, theta)
-                # No else, should be finished by now.
-
-                prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, path, prev_points))
+                self.state_go()
             elif STATE == "RESET":
-                prev_points = []
-                self.pla.enable(0)
-                self.planner = algs.a_star_planner(self.grid_num, self.offset)
-                replan = True
-                c_waypoint = Point(0,0)
-                n_waypoint = Point(0,0) # Haha! It looks like an owl.
-                path = []
+                self.state_reset()
                 STATE = "IDLE"
             elif STATE != "IDLE":
                 print "a_star.py have recieved an improper state: %s" % (STATE)
 
         print("DONE!")
-
-    def cleanup(self):
-        self.pos.unsubscribe()
-        self.ran.unsubscribe()
-        self.gra.unsubscribe()
-        self.client.disconnect()
 
 def go(robot_name, pipe_in):
     controller = AStarCont()
