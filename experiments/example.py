@@ -74,7 +74,7 @@ class ExampleCont:
                 
                 STATE = "IDLE"
             elif STATE != "IDLE":
-                print "example.py have recieved an improper state: %s" % (STATE)
+                print "example.py has recieved an improper state: %s" % (STATE)
 
         print("DONE!")
 

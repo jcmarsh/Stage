@@ -7,7 +7,6 @@ import sys
 import algs
 from playerc import *
 from stage_utils import *
-from timer import Timer
 
 class AStarCont:
     client = None
@@ -99,7 +98,7 @@ class AStarCont:
         # No else, should be finished by now.
 
         self.prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, self.path, self.prev_points))
-
+        
     def state_reset(self):
         self.prev_points = []
         self.pla.enable(0)
@@ -129,7 +128,7 @@ class AStarCont:
                 self.state_reset()
                 STATE = "IDLE"
             elif STATE != "IDLE":
-                print "a_star.py have recieved an improper state: %s" % (STATE)
+                print "a_star.py has recieved an improper state: %s" % (STATE)
 
         print("DONE!")
 
