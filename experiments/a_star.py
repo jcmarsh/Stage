@@ -74,31 +74,31 @@ class AStarCont:
             if self.add_obstacle(obs_x, obs_y):
                 replan = True
 
-            # reached waypoint?
-            grid_pos = algs.gridify(Point(self.pos.px, self.pos.py), self.grid_num, self.offset)
-            grid_way = algs.gridify(self.c_waypoint, self.grid_num, self.offset)
-            if grid_pos == grid_way:
-                replan = True
+        # reached waypoint?
+        grid_pos = algs.gridify(Point(self.pos.px, self.pos.py), self.grid_num, self.offset)
+        grid_way = algs.gridify(self.c_waypoint, self.grid_num, self.offset)
+        if grid_pos == grid_way:
+            replan = True
 
-            if replan:
-                self.path = self.planner.plan(Point(self.pos.px, self.pos.py), self.goal)
+        if replan:
+            self.path = self.planner.plan(Point(self.pos.px, self.pos.py), self.goal)
 
-            if self.path == None:
-                # Reset the planner.
-                self.planner = algs.a_star_planner(self.grid_num, self.offset)
-            elif len(self.path) > 2: 
-                self.c_waypoint = self.path[1]
-                n_waypoint = self.path[2]
-                theta = math.atan2(n_waypoint.y - self.c_waypoint.y, n_waypoint.x - self.c_waypoint.x)
-                self.pla.set_cmd_pose(self.c_waypoint.x, self.c_waypoint.y, theta)
-            elif len(self.path) > 1:
-                # Only one waypoint left
-                self.c_waypoint = self.path[1]
-                theta = self.pos.pa
-                self.pla.set_cmd_pose(self.c_waypoint.x, self.c_waypoint.y, theta)
-            # No else, should be finished by now.
+        if self.path == None:
+            # Reset the planner.
+            self.planner = algs.a_star_planner(self.grid_num, self.offset)
+        elif len(self.path) > 2: 
+            self.c_waypoint = self.path[1]
+            n_waypoint = self.path[2]
+            theta = math.atan2(n_waypoint.y - self.c_waypoint.y, n_waypoint.x - self.c_waypoint.x)
+            self.pla.set_cmd_pose(self.c_waypoint.x, self.c_waypoint.y, theta)
+        elif len(self.path) > 1:
+            # Only one waypoint left
+            self.c_waypoint = self.path[1]
+            theta = self.pos.pa
+            self.pla.set_cmd_pose(self.c_waypoint.x, self.c_waypoint.y, theta)
+        # No else, should be finished by now.
 
-            self.prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, self.path, self.prev_points))
+        self.prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, self.path, self.prev_points))
 
     def state_reset(self):
         self.prev_points = []
@@ -124,9 +124,7 @@ class AStarCont:
                 self.state_start()
                 STATE = "GO"
             elif STATE == "GO":
-                with Timer() as t:
-                    self.state_go()
-                print "=> elapsed time for GO state: %s secs" % t.secs
+                self.state_go()
             elif STATE == "RESET":
                 self.state_reset()
                 STATE = "IDLE"
