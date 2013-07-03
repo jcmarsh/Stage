@@ -44,6 +44,10 @@ class AStarCont:
 #        print "The robot  is at: %.2f %.2f" % (self.pos.px, self.pos.py)
 
         self.planner = algs.a_star_planner(self.grid_num, self.offset)
+        
+        # TODO: Must be a better way to do this.
+        # leader.py would like to have a copy of the position proxy so that it may track location
+        return self.pos
 
     def add_obstacle(self, x, y):
         # translate x and y to global coords

@@ -6,6 +6,7 @@ import math
 import sys
 import algs
 import a_star
+import time
 from playerc import *
 from stage_utils import *
 
@@ -17,35 +18,44 @@ class LeaderCont:
     '''
     followers = []
     a_star_cont = None
+    way_time = 1.0 # 1 second
+    start_time = 0
     waypoints = []
+    pos = None
     
     def init(self, robot_name):
         # A* controller for lead robot
-        a_star_cont = AStarCont()
-        a_star_cont.init(robot_name)
+        self.a_star_cont = a_star.AStarCont()
+        # TODO: This is horrible.
+        self.pos = self.a_star_cont.init(robot_name)
 
-        # Position proxy
-
-    def add_follower(follower):
-        followers.append(follower)
+    def add_follower(self, follower):
+        self.followers.append(follower)
 
     def state_die(self):
-        a_star_cont.state_die()
+        self.a_star_cont.state_die()
         self.pos.unsubscribe()
         self.client.disconnect()
 
     def state_start(self):
-        a_star_cont.state_start()
+        self.a_star_cont.state_start()
 
     def state_go(self):
-        a_star_cont.state_go()
+        self.a_star_cont.state_go()
+        
+        current_time = time.time()
+        elapsed_time = current_time - self.start_time
+        if elapsed_time >= self.way_time:
+            # Create new waypoint
+            print "New waypoint: (%f, %f, %f)" % (self.pos.px, self.pos.py, self.pos.pa)
+            self.waypoints.append((self.pos.px, self.pos.py, self.pos.pa))
+            self.start_time = current_time
 
     def state_reset(self):
-        a_star_cont.state_reset()
+        self.a_star_cont.state_reset()
+        self.waypoints = []
 
     def run(self, pipe_in):
-        prev_points = []
-        path = []
         STATE = "IDLE"
 
         while True:
