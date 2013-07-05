@@ -62,11 +62,12 @@ class FollowerCont:
         self.a_star_cont.state_reset()
         self.waypoints = []
 
-    def run(self, pipe_in, command_send):
+    def run(self, pipe_in, command_receive, command_send):
         # UPDATE
         STATE = "IDLE"
 
         while True:
+            # Check for state transitions from overlord
             if pipe_in.poll():
                 STATE = pipe_in.recv()
                 
@@ -84,6 +85,12 @@ class FollowerCont:
                 STATE = "IDLE"
             elif STATE != "IDLE":
                 print "leader.py has recieved an improper state: %s" % (STATE)
+
+            # Check for new waypoints
+            if not(command_receive == None) and command_receive.poll():
+                waypoint = command_receive.split() # TODO: verify correct format
+                print "received waypoint: %f, %f, %f" % (waypoint[0], waypoint[1], waypoint[2])
+                #waypoints.append(....)
 
 def go(robot_name, pipe_in, command_receive, command_send):
         # UPDATE
