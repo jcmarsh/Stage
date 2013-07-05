@@ -33,7 +33,7 @@ def _dist(x1, y1, x2, y2):
 
 def getDistances():
     distances = []
-    for i in range(0, len(robots)):
+    for i in range(len(robots)):
         pose = sim.get_pose2d(robots[i].name)
         # TODO: The target location shouldn't be hard coded
         distances.append(_dist(7, 7, pose[1], pose[2]))
@@ -104,7 +104,7 @@ time.sleep(4)
 # Robot information
 num_controllers = int(config.get("controllers", "num"))
 robots = []
-for i in range(0, num_controllers):
+for i in range(num_controllers):
     controller_name = config.get("controllers", "cont" + str(i))
     controller_imp = __import__(controller_name)
     robot_name = config.get("controllers", "name" + str(i))
@@ -145,20 +145,34 @@ except (ConfigParser.NoOptionError, ValueError):
 # Phase 2: Run
 # Launch the .ini described controllers
 num_controllers = int(config.get("controllers", "num"))
-for i in range(0, len(robots)):
+for i in range(len(robots)):
     print "Opening controller for %s" % (robots[i].name)
     robots[i].pipe_recieve, robots[i].pipe_send = multiprocessing.Pipe(False)
-    robots[i].controller_p = multiprocessing.Process(target=robots[i].controller_i.go, args=(robots[i].name, robots[i].pipe_recieve, ))
+
+    # Set up communication between the controllers
+    # TODO: This should be described in the .ini and set up here accordingly
+    # but for now I'm just going to be lazy and assume a linked list style chain
+    command_receive = None
+    command_send = None
+    command_receive_next = None
+    if i + 1 < len(robots):
+        command_receive_next, command_send = multiprocessing.Pipe(False)
+    else:
+        command_receive_next = None # Won't be used, but nice to make it explicit
+        command_send = None
+
+    robots[i].controller_p = multiprocessing.Process(target=robots[i].controller_i.go, args=(robots[i].name, robots[i].pipe_recieve, command_receive, command_send))
+    command_receive = command_receive_next
     robots[i].controller_p.start()
-    time.sleep(2)
+    time.sleep(2)        
 
 times = []
-for run_num in range (0, int(config.get("experiment", "runs"))):
+for run_num in range (int(config.get("experiment", "runs"))):
     start_time = sim.get_time(0)
     current_time = start_time
 
     # Start the controllers
-    for i in range(0, len(robots)):
+    for i in range(len(robots)):
         robots[i].pipe_send.send("START")
 
     # Test for whatever it is we are measuring
@@ -181,12 +195,12 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
 
 
     # Reset the controllers
-    for i in range(0, len(robots)):
+    for i in range(len(robots)):
         robots[i].pipe_send.send("RESET")
 
     time.sleep(1)
     # Reset the robot locations
-    for i in range(0, len(robots)):
+    for i in range(len(robots)):
         sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)
 
     # Take a short break... see if that helps
@@ -195,18 +209,18 @@ for run_num in range (0, int(config.get("experiment", "runs"))):
 print "OVER"
 print times
 results_file.write(experiment_desc + "\n")
-for i in range(0, len(times)): # times is of the structure ((time, (dist0, dist1, ... distn)), ( ... )) I think.
+for i in range(len(times)): # times is of the structure ((time, (dist0, dist1, ... distn)), ( ... )) I think.
     results_file.write("Time: " + str(times[i][0]) + "\t")
-    for j in range(0, len(times[i][1])):
+    for j in range(len(times[i][1])):
         results_file.write("dist_" + str(j) + ": " + str(times[i][1][j]) + "\t")
     results_file.write("\n")
 results_file.write("\n")
 
 # Shut down controllers
-for i in range(0, len(robots)):
+for i in range(len(robots)):
     robots[i].pipe_send.send("DIE")
 time.sleep(2)
-for i in range(0, len(robots)):
+for i in range(len(robots)):
     robots[i].controller_p.join()
 
 sim.unsubscribe()

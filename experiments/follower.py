@@ -1,25 +1,25 @@
-# Basic outline for a controller
-# Pay attention to this, since overlord.py assumes some of this
-# These functions / the communication should be enforced
+# Keeps a queue of waypoints that are sent to it, and then goes to them.
 # James Marshall
 
 import math
 import sys
-import algs # Right now just contains a_star (well, art_pot too, but should use the driver instead)
+import algs # TODO: needed?
+import time
 from playerc import *
-from stage_utils import * # Helper functions
+from stage_utils import *
 
-class ExampleCont:
-    # All controllers need a client, and will likely have position, ranger (sensors for the gridcar), graphics, and local planner
+class FollowerCont:
+    way_time = 1.0 # 1 second # TODO: Needed?
+    start_time = 0
+    waypoints = []
+    pos = None
+
     client = None
     pos = None
     ran = None
     gra = None
     pla = None
-    
-    goal = None
-    offset = None
-    
+
     def init(self, robot_name):
         # Create client object and other proxies, using helper functions in stage_utils
         self.client = startup(("filler", robot_name), "run_temp.cfg")
@@ -32,61 +32,62 @@ class ExampleCont:
 
         self.client.read()
 
-        # run_temp.world is the script generated .world file. For now we only support one target.
-        target_loc = search_pose("run_temp.world", "target0")
-        self.goal = Point(target_loc[0], target_loc[1])
-        self.offset = Point(8, 8)
-        
-    def run(self, pipe_in):
-        prev_points = [] # For drawing the trail of the robot.
-        STATE = "IDLE"
-
-        while True:
-            if pipe_in.poll():
-                STATE = pipe_in.recv()
-                    
-            if STATE == "DIE":
-                pipe_in.close()
-                self.cleanup()
-                break
-            elif STATE == "START":
-                self.pla.enable(1) # TODO: See if this is actually needed / used.
-                
-                STATE = "GO"
-            elif STATE == "GO":
-                idt = self.client.read()
-
-                # Check sensor readings
-                for i in range(0, self.ran.ranges_count):
-                    # figure out location of sensed object
-                    tao = (2 * math.pi * i) / self.ran.ranges_count
-                    obs_x = self.ran.ranges[i] * math.cos(tao)
-                    obs_y = self.ran.ranges[i] * math.sin(tao)
-                    # obs_x and obs_y are relative to the robot, and I'm okay with that.
-
-                # Planning and movement should be done here.
-
-                # Put pretty things on the screen
-                prev_points.append(draw_all(self.gra, self.pos, self.offset, self.grid_num, None, path, prev_points))
-            elif STATE == "RESET":
-                prev_points = []
-                self.pla.enable(0) # TODO: Check if needed
-                
-                STATE = "IDLE"
-            elif STATE != "IDLE":
-                print "example.py have recieved an improper state: %s" % (STATE)
-
-        print("DONE!")
-
-    def cleanup(self):
+    def state_die(self):
+        # TODO: close the channels?
         self.pos.unsubscribe()
         self.ran.unsubscribe()
         self.gra.unsubscribe()
         self.pla.unsubscribe()
         self.client.disconnect()
 
-def go(robot_name, pipe_in):
-    controller = ExampleCont()
+    def state_start(self):
+        # UPDATE
+        self.a_star_cont.state_start()
+
+    def state_go(self, command_send):
+        # UPDATE
+        self.a_star_cont.state_go()
+        
+        current_time = time.time()
+        elapsed_time = current_time - self.start_time
+        if elapsed_time >= self.way_time:
+            # Create new waypoint
+            print "New waypoint: (%f, %f, %f)" % (self.pos.px, self.pos.py, self.pos.pa)
+            self.waypoints.append((self.pos.px, self.pos.py, self.pos.pa))
+            command_send(str(self.pos.px) + " " + str(self.pos.py) + " " + str(self.pos.pa))
+            self.start_time = current_time
+
+    def state_reset(self):
+        # UPDATE
+        self.a_star_cont.state_reset()
+        self.waypoints = []
+
+    def run(self, pipe_in, command_send):
+        # UPDATE
+        STATE = "IDLE"
+
+        while True:
+            if pipe_in.poll():
+                STATE = pipe_in.recv()
+                
+            if STATE == "DIE":
+                pipe_in.close()
+                self.state_die()
+                break
+            elif STATE == "START":
+                self.state_start()
+                STATE = "GO"
+            elif STATE == "GO":
+                self.state_go(command_send)
+            elif STATE == "RESET":
+                self.state_reset()
+                STATE = "IDLE"
+            elif STATE != "IDLE":
+                print "leader.py has recieved an improper state: %s" % (STATE)
+
+def go(robot_name, pipe_in, command_receive, command_send):
+        # UPDATE
+    controller = LeaderCont()
     controller.init(robot_name)
-    controller.run(pipe_in)
+    controller.run(pipe_in, command_recieve, command_send)
 
