@@ -42,7 +42,7 @@ class LeaderCont:
             # Create new waypoint
             print "New waypoint: (%f, %f, %f)" % (self.pos.px, self.pos.py, self.pos.pa)
             self.waypoints.append((self.pos.px, self.pos.py, self.pos.pa))
-            command_send(str(self.pos.px) + " " + str(self.pos.py) + " " + str(self.pos.pa))
+            command_send.send(str(self.pos.px) + " " + str(self.pos.py) + " " + str(self.pos.pa))
             self.start_time = current_time
 
     def state_reset(self):

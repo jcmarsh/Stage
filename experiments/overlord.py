@@ -145,6 +145,9 @@ except (ConfigParser.NoOptionError, ValueError):
 # Phase 2: Run
 # Launch the .ini described controllers
 num_controllers = int(config.get("controllers", "num"))
+command_receive = None
+command_send = None
+command_receive_next = None
 for i in range(len(robots)):
     print "Opening controller for %s" % (robots[i].name)
     robots[i].pipe_recieve, robots[i].pipe_send = multiprocessing.Pipe(False)
@@ -152,9 +155,6 @@ for i in range(len(robots)):
     # Set up communication between the controllers
     # TODO: This should be described in the .ini and set up here accordingly
     # but for now I'm just going to be lazy and assume a linked list style chain
-    command_receive = None
-    command_send = None
-    command_receive_next = None
     if i + 1 < len(robots):
         command_receive_next, command_send = multiprocessing.Pipe(False)
     else:
