@@ -33,6 +33,7 @@ class LeaderCont:
         self.a_star_cont.state_start()
 
     def state_go(self, command_send):
+        # TODO: May be a lone leader.
         self.a_star_cont.state_go()
         
         current_time = time.time()

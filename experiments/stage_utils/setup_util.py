@@ -45,7 +45,7 @@ def WriteCFG(new_config_name, old_config_name, map_name):
     new_cfg.write("\tresolution .032\n")
     new_cfg.write(")\n\n")
 
-    new_cfg.write("# What follows is the .cfg file, as specified int the .ini file\n\n")
+    new_cfg.write("# What follows is the .cfg file, as specified in the .ini file\n\n")
 
     for line in old_cfg:
         new_cfg.write(line)

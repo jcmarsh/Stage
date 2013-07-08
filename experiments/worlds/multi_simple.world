@@ -5,10 +5,10 @@
 # Author: James Marshall
 # Date: Feb 25 2013
 
-include "gridcar.inc"
-include "target.inc"
-include "map.inc"
-include "floor.inc"
+include "./worlds/gridcar.inc"
+include "./worlds/target.inc"
+include "./worlds/map.inc"
+include "./worlds/floor.inc"
 
 window
 (
@@ -27,7 +27,7 @@ target
 gridcar
 (
 	name "hank"
-	pose [-5 -7 0 0]
+	pose [-6 -7 0 0]
 	localization_origin [0 0 0 0]
 	color "red"
 )
@@ -35,7 +35,7 @@ gridcar
 gridcar
 (
 	name "frank"
-	pose [-6 -7 0 0]
+	pose [-6.5 -7 0 0]
 	localization_origin [0 0 0 0]
 	color "green"
 )
