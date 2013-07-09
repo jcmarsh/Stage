@@ -9,8 +9,9 @@ from playerc import *
 from stage_utils import *
 
 class FollowerCont:
-    way_dist = .1 # TODO: Parameterize?
+    way_epsi = .4 # TODO: Parameterize?
     way_time = 1.0 # 1 second # TODO: Needed?
+    way_spac = 2
     start_time = 0
     waypoints = []
     pos = None
@@ -45,24 +46,23 @@ class FollowerCont:
         self.pla.enable(1)
 
     def state_go(self, command_send):
+        idt = self.client.read()
+
         current_time = time.time()
         elapsed_time = current_time - self.start_time
         if not(command_send == None): # May be the last in the line of robots.
             if elapsed_time >= self.way_time:
-                # Create new waypoint
-#                print "New waypoint: (%f, %f, %f)" % (self.pos.px, self.pos.py, self.pos.pa)
-#                self.waypoints.append((self.pos.px, self.pos.py, self.pos.pa))
                 command_send.send(str(self.pos.px) + " " + str(self.pos.py) + " " + str(self.pos.pa))
                 self.start_time = current_time
 
-        if len(self.waypoints) >= 1:
+        if len(self.waypoints) >= self.way_spac:
             w_x = self.waypoints[0][0]
             w_y = self.waypoints[0][1]
             dist = math.sqrt(math.pow(self.pos.px - w_x, 2) + math.pow(self.pos.py - w_y, 2))
-            if  dist < self.way_dist:
-                self.waypoints.pop()
+            if  dist < self.way_epsi:
+                self.waypoints.pop(0)
 
-        if len(self.waypoints) >= 1:
+        if len(self.waypoints) >= self.way_spac:
             self.pla.set_cmd_pose(self.waypoints[0][0], self.waypoints[0][1], self.waypoints[0][2])
 
     def state_reset(self):
@@ -101,7 +101,6 @@ class FollowerCont:
                 w_x = float(waypoint[0])
                 w_y = float(waypoint[1])
                 w_a = float(waypoint[2])
-                print "received waypoint: %f, %f, %f" % (w_x, w_y, w_a)
                 self.waypoints.append((w_x, w_y, w_a))
 
 
