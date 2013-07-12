@@ -5,7 +5,6 @@
 # Facilitates the execution of many test runs
 
 import ConfigParser
-import multiprocessing
 import os
 import shutil
 import subprocess
@@ -13,31 +12,6 @@ import sys
 import time
 from playerc import *
 from stage_utils import *
-
-#####################################################################
-# Represents some handy information about a robot
-class Robot:
-    def __init__(self, name, controller, x, y, a):
-        self.start_x = x
-        self.start_y = y
-        self.start_a = a
-        self.name = name
-        self.controller_i = controller
-        self.controller_p = None
-        self.pipe_recieve = None
-        self.pipe_send = None
-
-def _dist(x1, y1, x2, y2):
-    return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2))
-
-
-def getDistances():
-    distances = []
-    for i in range(len(robots)):
-        pose = sim.get_pose2d(robots[i].name)
-        # TODO: The target location shouldn't be hard coded
-        distances.append(_dist(7, 7, pose[1], pose[2]))
-    return distances
 
 #####################################################################
 # Phase 1: Setup
@@ -102,17 +76,20 @@ player_id = subprocess.Popen(["player", new_cfg_name])
 time.sleep(4)
 
 # Robot information
+# The manager will now deal with the robots and their controllers.
+manager_name = config.get("controllers", "manager")
+manager_imp = __import__(manager_name)
+manager = manager_imp.Manager()
+
 num_controllers = int(config.get("controllers", "num"))
-robots = []
 for i in range(num_controllers):
     controller_name = config.get("controllers", "cont" + str(i))
-    controller_imp = __import__(controller_name)
     robot_name = config.get("controllers", "name" + str(i))
-    loc = search_pose(new_world_name, robot_name)
-    print "We've got a robot: %s\t%s - (%f,%f)" % (robot_name, controller_name, loc[0], loc[1])
-    robots.append(Robot(robot_name, controller_imp, loc[0], loc[1], 0))
+    # DELETE
+    print "New Controller"
+    manager.add_controller(controller_name, new_world_name, robot_name)
 
-# Setup our controller
+# Setup the overlord controller
 client = playerc_client(None, 'localhost', 6665)
 if client.connect() != 0:
     raise playerc_error_str()
@@ -120,10 +97,6 @@ if client.connect() != 0:
 sim = playerc_simulation(client, 0)
 if sim.subscribe(PLAYERC_OPEN_MODE) !=0:
     raise playerc_error_str()
-
-# Should we launch a controller just for recording things?
-# Will the script have access to each controller's runtime?
-# How are we managing all of this?
 
 # DON"T FORGET ABOUT NOISE AND THE OTHER "KNOBS"
 
@@ -144,66 +117,37 @@ except (ConfigParser.NoOptionError, ValueError):
 #####################################################################
 # Phase 2: Run
 # Launch the .ini described controllers
-num_controllers = int(config.get("controllers", "num"))
-command_receive = None
-command_send = None
-command_receive_next = None
-for i in range(len(robots)):
-    print "Opening controller for %s" % (robots[i].name)
-    robots[i].pipe_recieve, robots[i].pipe_send = multiprocessing.Pipe(False)
-
-    # Set up communication between the controllers
-    # TODO: This should be described in the .ini and set up here accordingly
-    # but for now I'm just going to be lazy and assume a linked list style chain
-    if i + 1 < len(robots):
-        command_receive_next, command_send = multiprocessing.Pipe(False)
-    else:
-        command_receive_next = None # Won't be used, but nice to make it explicit
-        command_send = None
-
-    robots[i].controller_p = multiprocessing.Process(target=robots[i].controller_i.go, args=(robots[i].name, robots[i].pipe_recieve, command_receive, command_send))
-    command_receive = command_receive_next
-    robots[i].controller_p.start()
-    time.sleep(2)        
+manager.open_controllers()
 
 times = []
-for run_num in range (int(config.get("experiment", "runs"))):
+for run_num in range(int(config.get("experiment", "runs"))):
     start_time = sim.get_time(0)
     current_time = start_time
 
-    # Start the controllers
-    for i in range(len(robots)):
-        robots[i].pipe_send.send("START")
+    # DELETE
+    print "What up0?"
+
+    manager.start_controllers()
 
     # Test for whatever it is we are measuring
     finished = False
     dists = []
-    while (not(finished)):
-        dists = getDistances()
-        if min(dists) < .25: # The test is complete once any of the robots are within a meter of the target
-            finished = True
-        else:
-            finished = False
+    while(not(finished)):
+        finished = manager.test_finished(sim)
 
         current_time = sim.get_time(0)
         if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
             finished = True
             print "TIMEOUT!"
 
+    # DELETE
+    print "What up1?"
+
     # Record results
     times.append(((current_time - start_time) / time_scale, dists))
 
+    manager.reset_controllers(sim)
 
-    # Reset the controllers
-    for i in range(len(robots)):
-        robots[i].pipe_send.send("RESET")
-
-    time.sleep(1)
-    # Reset the robot locations
-    for i in range(len(robots)):
-        sim.set_pose2d(robots[i].name, robots[i].start_x, robots[i].start_y, robots[i].start_a)
-
-    # Take a short break... see if that helps
     time.sleep(2)
 
 print "OVER"
@@ -216,12 +160,7 @@ for i in range(len(times)): # times is of the structure ((time, (dist0, dist1, .
     results_file.write("\n")
 results_file.write("\n")
 
-# Shut down controllers
-for i in range(len(robots)):
-    robots[i].pipe_send.send("DIE")
-time.sleep(2)
-for i in range(len(robots)):
-    robots[i].controller_p.join()
+manager.shutdown_controllers()
 
 sim.unsubscribe()
 client.disconnect()
