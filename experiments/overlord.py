@@ -85,8 +85,6 @@ num_controllers = int(config.get("controllers", "num"))
 for i in range(num_controllers):
     controller_name = config.get("controllers", "cont" + str(i))
     robot_name = config.get("controllers", "name" + str(i))
-    # DELETE
-    print "New Controller"
     manager.add_controller(controller_name, new_world_name, robot_name)
 
 # Setup the overlord controller
@@ -124,9 +122,6 @@ for run_num in range(int(config.get("experiment", "runs"))):
     start_time = sim.get_time(0)
     current_time = start_time
 
-    # DELETE
-    print "What up0?"
-
     manager.start_controllers()
 
     # Test for whatever it is we are measuring
@@ -139,9 +134,6 @@ for run_num in range(int(config.get("experiment", "runs"))):
         if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
             finished = True
             print "TIMEOUT!"
-
-    # DELETE
-    print "What up1?"
 
     # Record results
     times.append(((current_time - start_time) / time_scale, dists))

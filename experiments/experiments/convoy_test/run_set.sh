@@ -5,8 +5,8 @@
 #echo "0 Experiment: ############################"
 #python overlord.py ./experiments/convoy_test/conf_0.ini results.txt
 
-echo "1 Experiment: ############################"
-python overlord.py ./experiments/convoy_test/conf_1.ini results.txt
+#echo "1 Experiment: ############################"
+#python overlord.py ./experiments/convoy_test/conf_1.ini results.txt
 
 echo "2 Experiment: ############################"
 python overlord.py ./experiments/convoy_test/conf_2.ini results.txt
