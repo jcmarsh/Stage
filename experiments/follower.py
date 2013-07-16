@@ -3,7 +3,6 @@
 
 import math
 import sys
-#import algs # TODO: needed?
 import time
 from playerc import *
 from stage_utils import *
@@ -64,6 +63,8 @@ class FollowerCont:
 
         if len(self.waypoints) >= self.way_spac:
             self.pla.set_cmd_pose(self.waypoints[0][0], self.waypoints[0][1], self.waypoints[0][2])
+        else:
+            self.pla.set_cmd_pose(self.pos.px, self.pos.py, self.pos.pa)
 
     def state_reset(self):
         self.pla.enable(0)

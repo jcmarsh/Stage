@@ -31,7 +31,8 @@ private:
   virtual int MainSetup();
   virtual void MainQuit();
   
-  double max_speed;
+  double vel_scale;
+  double dist_epsilon;
   double goal_radius, goal_extent, goal_scale;
   double obstacle_radius, obstacle_extent, obstacle_scale;
 
@@ -63,8 +64,6 @@ private:
   Device *odom;
   player_devaddr_t odom_addr;
 
-  double dist_eps; // TODO: Check on remvoing these -jcm
-  double ang_eps;
   double odom_pose[3];
   double odom_vel[3];
   int odom_stall;
@@ -156,7 +155,8 @@ ArtPotDriver::ArtPotDriver(ConfigFile* cf, int section)
   }
 
   // Read an option from the configuration file
-  this->max_speed = cf->ReadFloat(section, "max_speed", 4);
+  this->vel_scale = cf->ReadFloat(section, "vel_scale", 4);
+  this->dist_epsilon = cf->ReadFloat(section, "dist_epsilon", .1);
   this->goal_radius = cf->ReadFloat(section, "goal_radius", .1);
   this->goal_extent = cf->ReadFloat(section, "goal_extent", 2);
   this->goal_scale = cf->ReadFloat(section, "goal_scale", .5);
@@ -341,35 +341,39 @@ void ArtPotDriver::DoOneUpdate() {
     total_factors += 1;
   }
   
-  for (i = 1; i < laser_count; i++) {
-    // figure out location of the obstacle...
-    tao = (2 * M_PI * i) / laser_count;
-    obs_x = laser_ranges[i] * cos(tao);
-    obs_y = laser_ranges[i] * sin(tao);
-    // obs.x and obs.y are relative to the robot, and I'm okay with that.
+  // TODO: Could I use goal_radius for the dist_epsilon
+  // TODO: Now will not react to obstacles while at a waypoint. Even moving ones.
+  if (dist > dist_epsilon) {
+    for (i = 1; i < laser_count; i++) {
+      // figure out location of the obstacle...
+      tao = (2 * M_PI * i) / laser_count;
+      obs_x = laser_ranges[i] * cos(tao);
+      obs_y = laser_ranges[i] * sin(tao);
+      // obs.x and obs.y are relative to the robot, and I'm okay with that.
     
-    dist = sqrt(pow(obs_x, 2) + pow(obs_y, 2));
-    theta = atan2(obs_y, obs_x);
+      dist = sqrt(pow(obs_x, 2) + pow(obs_y, 2));
+      theta = atan2(obs_y, obs_x);
     
-    if (dist <= obstacle_extent + obstacle_radius) {
-      delta_x += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * cos(theta);
-      delta_y += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * sin(theta);
-      total_factors += 1;
+      if (dist <= obstacle_extent + obstacle_radius) {
+	delta_x += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * cos(theta);
+	delta_y += -obstacle_scale * (obstacle_extent + obstacle_radius - dist) * sin(theta);
+	total_factors += 1;
+      }
     }
+
+    delta_x = delta_x / total_factors;
+    delta_y = delta_y / total_factors;
+  
+    vel = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+    rot_vel = atan2(delta_y, delta_x);
+    vel = vel_scale * vel * (abs(M_PI - rot_vel) / M_PI);
+    rot_vel = vel_scale * rot_vel;
+
+    // TODO: Should turn to the desired theta, goal_t
+    this->PutCommand(vel, rot_vel);
+  } else { // within distance epsilon. Give it up, man.
+    this->PutCommand(0,0);
   }
-  
-  delta_x = delta_x / total_factors;
-  delta_y = delta_y / total_factors;
-  
-  vel = max_speed * sqrt(pow(delta_x, 2) + pow(delta_y, 2));
-  rot_vel = max_speed * atan2(delta_y, delta_x);
-
-  // TODO: This needs to be tested. Actually, it all needs to be tested!
-  //  if (abs(atan2(delta_y, delta_x)) > (M_PI / 2)) {
-  //    vel = 0;
-  //  }
-
-  this->PutCommand(vel, rot_vel);
 }
 
 
