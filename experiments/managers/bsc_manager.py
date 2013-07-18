@@ -4,25 +4,10 @@
 
 import time
 import multiprocessing
+from manager_common import *
 from playerc import *
 from stage_utils import *
 
-#####################################################################
-# Represents some handy information about a robot
-# TODO: Consider moving to a separate file; needed for many managers.
-class Robot:
-    def __init__(self, name, controller, x, y, a):
-        self.start_x = x
-        self.start_y = y
-        self.start_a = a
-        self.name = name
-        self.controller_i = controller
-        self.controller_p = None
-        self.pipe_recieve = None
-        self.pipe_send = None
-
-def _dist(x1, y1, x2, y2):
-    return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2))
 
 def getDistances(robots, sim):
     distances = []
@@ -46,25 +31,11 @@ class Manager:
         self.robots.append(Robot(robot_name, controller_imp, loc[0], loc[1], 0)) # TODO: look into what controller_imp actually is.
 
     def open_controllers(self):
-        command_receive = None
-        command_send = None
-        command_receive_next = None
-
         for i in range(len(self.robots)):
             print "Opening controller for %s" % (self.robots[i].name)
             self.robots[i].pipe_recieve, self.robots[i].pipe_send = multiprocessing.Pipe(False)
 
-            # Set up communication between the controllers
-            # TODO: This should be described in the .ini and set up here accordingly
-            # but for now I'm just going to be lazy and assume a linked list style chain
-            if i + 1 < len(self.robots):
-                command_receive_next, command_send = multiprocessing.Pipe(False)
-            else:
-                command_receive_next = None # Won't be used, but nice to make it explicit
-                command_send = None
-
-            self.robots[i].controller_p = multiprocessing.Process(target=self.robots[i].controller_i.go, args=(self.robots[i].name, self.robots[i].pipe_recieve, command_receive, command_send))
-            command_receive = command_receive_next
+            self.robots[i].controller_p = multiprocessing.Process(target=self.robots[i].controller_i.go, args=(self.robots[i].name, self.robots[i].pipe_recieve))
             self.robots[i].controller_p.start()
             # time.sleep(2) # TODO: Needed?
 
@@ -95,4 +66,10 @@ class Manager:
         time.sleep(2)
         for i in range(len(self.robots)):
             self.robots[i].controller_p.join()
+
+
+
+
+        
+
 

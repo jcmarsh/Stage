@@ -13,6 +13,7 @@ import time
 from playerc import *
 from stage_utils import *
 
+
 #####################################################################
 # Phase 1: Setup
 # Argument should be the name of experiment description file
@@ -36,6 +37,10 @@ try:
 except IOError:
     print "Failed to open results file. Quiting."
     print_n_quit()
+
+# TODO: This is a horrible hack. I want the manager files in a sub-dir, but need to import them
+# TODO: Should check if this is an actual directory and fail if not. Or, you know, actually make the code sane.
+sys.path.append('/home/jcmarsh/Research/stage/experiments/managers')
 
 config = ConfigParser.ConfigParser()
 config.readfp(open(experiment_desc)) # TODO: IOError here?
@@ -77,6 +82,7 @@ time.sleep(4)
 
 # Robot information
 # The manager will now deal with the robots and their controllers.
+# TODO: error out if this fails.
 manager_name = config.get("controllers", "manager")
 manager_imp = __import__(manager_name)
 manager = manager_imp.Manager()
