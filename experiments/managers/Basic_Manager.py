@@ -79,3 +79,14 @@ class Basic_Manager:
         time.sleep(2)
         for i in range(len(self.robots)):
             self.robots[i].controller_p.join()
+
+    # Functions concerning stat collection
+    def final_stats(self, sim):
+        dists = getDistances(self.robots, sim)
+        ret_str = ""
+        for dist in range(len(dists)):
+            ret_str = ret_str + "\tdist_" + str(dist) + ": " + str(dists[dist])
+        return ret_str
+
+    def update_stats(self, sim):
+        return

@@ -125,6 +125,7 @@ except (ConfigParser.NoOptionError, ValueError):
 manager.open_controllers()
 
 times = []
+results = []
 for run_num in range(int(config.get("experiment", "runs"))):
     start_time = sim.get_time(0)
     current_time = start_time
@@ -133,7 +134,7 @@ for run_num in range(int(config.get("experiment", "runs"))):
 
     # Test for whatever it is we are measuring
     finished = False
-    dists = []
+
     while(not(finished)):
         finished = manager.test_finished(sim)
 
@@ -143,7 +144,8 @@ for run_num in range(int(config.get("experiment", "runs"))):
             print "TIMEOUT!"
 
     # Record results
-    times.append(((current_time - start_time) / time_scale, dists))
+    times.append((current_time - start_time) / time_scale)
+    results.append(manager.final_stats(sim))
 
     manager.reset_controllers(sim)
 
@@ -153,9 +155,8 @@ print "OVER"
 print times
 results_file.write(experiment_desc + "\n")
 for i in range(len(times)): # times is of the structure ((time, (dist0, dist1, ... distn)), ( ... )) I think.
-    results_file.write("Time: " + str(times[i][0]) + "\t")
-    for j in range(len(times[i][1])):
-        results_file.write("dist_" + str(j) + ": " + str(times[i][1][j]) + "\t")
+    results_file.write("Time: " + str(times[i]) + "\n")
+    results_file.write(results[i])
     results_file.write("\n")
 results_file.write("\n")
 
