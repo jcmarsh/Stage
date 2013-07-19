@@ -85,7 +85,8 @@ time.sleep(4)
 # TODO: error out if this fails.
 manager_name = config.get("controllers", "manager")
 manager_imp = __import__(manager_name)
-manager = manager_imp.Manager()
+new_manager_function = getattr(manager_imp, manager_name)
+manager = new_manager_function()
 
 num_controllers = int(config.get("controllers", "num"))
 for i in range(num_controllers):
