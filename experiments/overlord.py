@@ -136,6 +136,7 @@ for run_num in range(int(config.get("experiment", "runs"))):
     finished = False
 
     while(not(finished)):
+        manager.update_stats(sim)
         finished = manager.test_finished(sim)
 
         current_time = sim.get_time(0)
