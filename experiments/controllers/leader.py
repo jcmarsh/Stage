@@ -25,9 +25,7 @@ class LeaderCont:
 
     def state_die(self):
         # TODO: Close the pipes?
-        self.a_star_cont.state_die()
-        self.pos.unsubscribe()
-        self.client.disconnect()
+        self.a_star_cont.state_die() # Takes care of the proxies and client.
 
     def state_start(self):
         self.a_star_cont.state_start()
