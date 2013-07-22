@@ -1,0 +1,62 @@
+This directory holds most of the files that make up the testing framework.
+
+./:
+overlord.py - Controls everything. Sets up experiment according to provided experiment description (usually kicked of by a run script in ./experitments/name/run_set.sh)
+README - This file.
+run_player.py - Predicessor to overloard.py # NEEDS UPDATING # Useful for debugging.
+run_temp.cfg - Temporary file made by overlord.py
+run_temp.world - Temporary file made by overlord.py
+timer.py - For debugging. Gives a rough time for execution.
+
+algs: Two navigation algorithms, A* and artificial potential (not used, see art_pot_driver)
+
+art_pot_driver: A c implementation of the artificial potential local navigator. Built as a P/S driver.
+
+configs: Describe the setup of actors in the P/S world, things such as the drivers they use
+art_pot.cfg - A single robot using the art_pot_driver
+multi_comp.cfg - Three robots, each of which use the art_pot_driver
+single_comp.cfg - A single robot that uses the vfh driver for local navigation and wavefront for path.
+
+controllers:
+################### NEEDS TO BE CLEANED UP AND UPDATED
+a_star.py
+follower.py
+pot_driver.py
+wave.py
+example.py
+leader.py
+wave_leader.py
+
+experiments: Descriptions and run scripts for many different experimental configurations
+################### NEEDS TO BE CLEANED UP AND UPDATED
+a_star_test
+convoy_test
+debug_art_pot
+leader_test
+old
+pot_test
+uturn_convoy_test
+
+managers: Managers decide what robot runs which controller during the experiment
+(Initial controller assignments are described in the experiment description. The manager can change this, and is also responsible for coordinating communication between robots)
+Basic_Manager.py - Base class, the bare minimum. 
+Linked_Manager.py - Simple Leader / Follower, modeled on a linked list.
+
+noises: Future home of noise models and appropriate functions.
+
+stage_utils: Common useful functions.
+generic_start.py - Setup up the proxies provided by every robot: position, ranger, and graphics.
+graph_util.py - Deals with drawing things to the graphics layer (grid lines, paths, obstacles, etc.)
+parse_world.py - Functions to parse the .world file
+setup_util.py - Used by overlord.py to setup the temporary .world and .cfg files.
+
+worlds: Represent the world in which the simulator is operating.
+worlds\bitmaps: bitmap representations of the space.
+floor.inc - AUTOGEN! Sets the world bitmap to that described in the experiment description
+gridcar.inc - A simple differential drive robot encirlcled with range sensors.
+map.inc
+multi_simple.world - Three robots and a target.
+single_comp.world - One robot and a target.
+target.inc - It is a green dot.
+
+
