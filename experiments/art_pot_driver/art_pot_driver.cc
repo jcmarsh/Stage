@@ -344,7 +344,7 @@ void ArtPotDriver::DoOneUpdate() {
   // TODO: Could I use goal_radius for the dist_epsilon
   // TODO: Now will not react to obstacles while at a waypoint. Even moving ones.
   if (dist > dist_epsilon) {
-    for (i = 1; i < laser_count; i++) {
+    for (i = 0; i < laser_count; i++) {
       // figure out location of the obstacle...
       tao = (2 * M_PI * i) / laser_count;
       obs_x = laser_ranges[i] * cos(tao);

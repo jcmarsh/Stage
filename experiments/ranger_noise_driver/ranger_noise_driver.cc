@@ -142,7 +142,7 @@ int RangerNoiseDriver::ProcessMessage(QueuePointer & resp_queue,
 {
   if(Message::MatchMessage(hdr, PLAYER_MSGTYPE_DATA,
 			   PLAYER_LASER_DATA_SCAN, this->laser_addr)) {
-    ProcessLaser(*reinterpret_cast<player_laser_data_t *> (data));
+    ProcessLaser(*reinterpret_cast<player_laser_data_t *> (data)); // TODO: add header here.
     return 0;
   } else {
     return -1;
@@ -151,7 +151,7 @@ int RangerNoiseDriver::ProcessMessage(QueuePointer & resp_queue,
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main function for device thread
-void ArtPotDriver::Main() 
+void RangerNoiseDriver::Main() 
 {
   // The main loop; interact with the device here
   for(;;)
@@ -191,7 +191,7 @@ extern "C" {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shut down the laser
-int ArtPotDriver::ShutdownLaser()
+int RangerNoiseDriver::ShutdownLaser()
 {
   this->laser->Unsubscribe(this->InQueue);
   return 0;
@@ -199,7 +199,7 @@ int ArtPotDriver::ShutdownLaser()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Set up the laser
-int ArtPotDriver::SetupLaser()
+int RangerNoiseDriver::SetupLaser()
 {
   if(!(this->laser = deviceTable->GetDevice(this->laser_addr))) {
     PLAYER_ERROR("unable to locate suitable laser device");
@@ -217,17 +217,29 @@ int ArtPotDriver::SetupLaser()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Process laser data
-void ArtPotDriver::ProcessLaser(player_laser_data_t &data)
+void RangerNoiseDriver::ProcessLaser(player_laser_data_t &data)
 {
   int i;
-  
+  int r;
+  double x;
+
   laser_count = data.ranges_count;
   for (i = 0; i < data.ranges_count; i++) {
-    // TODO: THIS IS WHERE WE CAN ADD NOISE!
-    laser_ranges[i] = data.ranges[i];
+    // Get a number between (inclusive) 0.0 and 1.0
+    x = rand() / (double)RAND_MAX;
+    // Convert to a number from -Pi to Pi
+    x = (x * 2 * M_PI) - M_PI;
+    // use f(x) = (1 + cos(x)) / 2Pi to approximate a normal distribution
+    // From www.johndcook.com, who source it from
+    // "A cosine approximation to the normal distribution” 
+    // by D. H. Raab and E. H. Green, Psychometrika, Volume 26, pages 447-450.
+    x = (1 + cos(x)) / (2 * M_PI);
+    x = x * this->noise_scale;
+
+    data.ranges[i] = x + data.ranges[i];
   }
 
-  // TODO: CAN WE JUST PUBLISH HERE?
+  this->Publish(this->laser_out_id, PLAYER_MSGTYPE_DATA, PLAYER_LASER_DATA_SCAN, reinterpret_cast<void *> (&data), sizeof(data), NULL);
 }
 
 
