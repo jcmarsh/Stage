@@ -50,6 +50,9 @@ class LeaderCont:
         STATE = "IDLE"
 
         while True:
+            # Check if a collision has happened
+            self.a_star_cont.check_collision(pipe_in)
+
             if pipe_in.poll():
                 STATE = pipe_in.recv()
                 

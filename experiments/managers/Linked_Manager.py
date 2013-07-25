@@ -17,7 +17,7 @@ class Linked_Manager(Basic_Manager.Basic_Manager):
 
         for i in range(len(self.robots)):
             print "Opening controller for %s" % (self.robots[i].name)
-            self.robots[i].pipe_recieve, self.robots[i].pipe_send = multiprocessing.Pipe(False)
+            self.robots[i].pipe_robot_end, self.robots[i].pipe_manager_end = multiprocessing.Pipe()
 
             # Set up communication between the controllers
             # TODO: This should be described in the .ini and set up here accordingly
@@ -28,7 +28,7 @@ class Linked_Manager(Basic_Manager.Basic_Manager):
                 command_receive_next = None # Won't be used, but nice to make it explicit
                 command_send = None
 
-            self.robots[i].controller_p = multiprocessing.Process(target=self.robots[i].controller_i.go, args=(self.robots[i].name, self.robots[i].pipe_recieve, command_receive, command_send))
+            self.robots[i].controller_p = multiprocessing.Process(target=self.robots[i].controller_i.go, args=(self.robots[i].name, self.robots[i].pipe_robot_end, command_receive, command_send))
             command_receive = command_receive_next
             self.robots[i].controller_p.start()
 

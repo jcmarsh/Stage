@@ -20,8 +20,8 @@ class Robot:
         self.name = name
         self.controller_i = controller
         self.controller_p = None
-        self.pipe_recieve = None
-        self.pipe_send = None
+        self.pipe_manager_end = None
+        self.pipe_robot_end = None # TODO: The manager probably shouldn't have this bit.
 
 def _dist(x1, y1, x2, y2):
     return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2))
@@ -36,6 +36,7 @@ def getDistances(robots, sim):
 
 class Basic_Manager:
     robots = []
+    collision = False
     
     def add_controller(self, controller_name, new_world_name, robot_name):
         controller_imp = __import__(controller_name)
@@ -46,15 +47,15 @@ class Basic_Manager:
     def open_controllers(self):
         for i in range(len(self.robots)):
             print "Opening controller for %s" % (self.robots[i].name)
-            self.robots[i].pipe_recieve, self.robots[i].pipe_send = multiprocessing.Pipe(False)
+            self.robots[i].pipe_robot_end, self.robots[i].pipe_manager_end = multiprocessing.Pipe()
 
-            self.robots[i].controller_p = multiprocessing.Process(target=self.robots[i].controller_i.go, args=(self.robots[i].name, self.robots[i].pipe_recieve))
+            self.robots[i].controller_p = multiprocessing.Process(target=self.robots[i].controller_i.go, args=(self.robots[i].name, self.robots[i].pipe_robot_end))
             self.robots[i].controller_p.start()
 
 
     def start_controllers(self):
         for i in range(len(self.robots)):
-            self.robots[i].pipe_send.send("START")
+            self.robots[i].pipe_manager_end.send("START")
 
     def test_finished(self, sim):
         dists = getDistances(self.robots, sim)
@@ -63,9 +64,20 @@ class Basic_Manager:
         else:
             return False
 
+    def check_messages(self):
+        for i in range(len(self.robots)):
+            if self.robots[i].pipe_manager_end.poll():
+                MSG = self.robots[i].pipe_manager_end.recv()
+                if MSG == "COLLISION":
+                    print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAh. %d" % (i)
+                    self.collision = True
+
+    def check_collision(self):
+        return self.collision
+
     def reset_controllers(self, sim):
         for i in range(len(self.robots)):
-            self.robots[i].pipe_send.send("RESET")
+            self.robots[i].pipe_manager_end.send("RESET")
 
         time.sleep(1)
 
@@ -73,9 +85,12 @@ class Basic_Manager:
         for i in range(len(self.robots)):
             sim.set_pose2d(self.robots[i].name, self.robots[i].start_x, self.robots[i].start_y, self.robots[i].start_a)
 
+        # Reset Collision flag
+        self.collision = False
+
     def shutdown_controllers(self):
         for i in range(len(self.robots)):
-            self.robots[i].pipe_send.send("DIE")
+            self.robots[i].pipe_manager_end.send("DIE")
         time.sleep(2)
         for i in range(len(self.robots)):
             self.robots[i].controller_p.join()

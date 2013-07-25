@@ -5,15 +5,11 @@
 import math
 import sys
 import algs
-from playerc import *
+import Basic_Controller
 from stage_utils import *
+from playerc import *
 
-class AStarCont:
-    client = None
-    pos = None
-    ran = None
-    gra = None
-    pla = None
+class AStarCont(Basic_Controller.Basic_Controller):
     goal = None
     offset = None
     planner = None
@@ -25,16 +21,7 @@ class AStarCont:
     grid_num = 32
 
     def init(self, robot_name):
-        # Create client object
-        self.client = startup(("filler", robot_name), "run_temp.cfg")
-        self.pos, self.ran, self.gra = create_std(self.client)
-
-        # proxy for the local navigator
-        self.pla = playerc_planner(self.client, 0)
-        if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
-            raise playerc_error_str()
-
-        self.client.read()
+        super(AStarCont, self).init(robot_name)
 
         target_loc = search_pose("run_temp.world", "target0")
         self.goal = Point(target_loc[0], target_loc[1])
@@ -52,16 +39,6 @@ class AStarCont:
     def add_obstacle(self, x, y):
         # translate x and y to global coords
         return self.planner.add_obstacle(trans_point_r_g(self.pos, Point(x, y)))
-
-    def state_die(self):
-        self.pos.unsubscribe()
-        self.ran.unsubscribe()
-        self.gra.unsubscribe()
-        self.pla.unsubscribe()
-        self.client.disconnect()
-
-    def state_start(self):
-        self.pla.enable(1)
 
     def state_go(self):
         idt = self.client.read()
@@ -116,6 +93,9 @@ class AStarCont:
         STATE = "IDLE"
 
         while True:
+            # Check if a collision has happened
+            self.check_collision(pipe_in)
+
             if pipe_in.poll():
                 STATE = pipe_in.recv()
                     

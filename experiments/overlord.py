@@ -139,12 +139,17 @@ for run_num in range(int(config.get("experiment", "runs"))):
 
     while(not(finished)):
         manager.update_stats(sim)
+        manager.check_messages()
         finished = manager.test_finished(sim)
 
         current_time = sim.get_time(0)
         if (current_time - start_time >= timeout * time_scale): # Did it run out fo time?
             finished = True
             print "TIMEOUT!"
+
+        if manager.check_collision():
+            finished = True
+            print "COLLISION"
 
     # Record results
     times.append((current_time - start_time) / time_scale)

@@ -6,29 +6,16 @@
 import math
 import sys
 import algs
+import Basic_Controller
 from playerc import *
 from stage_utils import *
 
-class Pot:
-    client = None
-    pos = None
-    ran = None
-    gra = None
+class Pot(Basic_Controller.Basic_Controller):
     goal = None
     offset = None
-    pla = None
 
     def init(self, robot_name):
-        # Create client object
-        self.client = startup(("filler", robot_name), "run_temp.cfg")
-        self.pos, self.ran, self.gra = create_std(self.client)
-
-        # proxy for the local navigator
-        self.pla = playerc_planner(self.client, 0)
-        if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
-            raise playerc_error_str()
-
-        self.client.read()
+        Basic_Controller.init(robot_name)
 
         target_loc = search_pose("run_temp.world", "target0")
         self.goal = Point(target_loc[0], target_loc[1])
@@ -39,14 +26,18 @@ class Pot:
         STATE = "IDLE"
 
         while(True):
+            # Check if a collision has happened
+            self.check_collision(pipe_in)
+
             if pipe_in.poll():
                 STATE = pipe_in.recv()
 
             if STATE == "DIE":
                 pipe_in.close()
-                self.cleanup()
+                self.state_die()
+                break
             elif STATE == "START":
-                self.pla.enable(0)
+                self.state_start()
                 STATE = "GO"
             elif STATE == "GO":
                 idt = self.client.read()
@@ -61,12 +52,6 @@ class Pot:
                 print "pot_driver.py has recieved an improper state: %s" % (STATE)
 
         print("DONE!")
-
-    def cleanup(self):
-        self.pos.unsubscribe()
-        self.ran.unsubscribe()
-        self.gra.unsubscribe()
-        self.client.disconnect()
 
 def go(robot_name, pipe_in):
     controller = Pot()

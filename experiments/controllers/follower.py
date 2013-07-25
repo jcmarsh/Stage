@@ -4,45 +4,16 @@
 import math
 import sys
 import time
+import Basic_Controller
 from playerc import *
 from stage_utils import *
 
-class FollowerCont:
+class FollowerCont(Basic_Controller.Basic_Controller):
     way_epsi = .4 # TODO: Parameterize?
     way_time = 1.0 # 1 second # TODO: Needed?
     way_spac = 2
     start_time = 0
     waypoints = []
-    pos = None
-
-    client = None
-    pos = None
-    ran = None
-    gra = None
-    pla = None
-
-    def init(self, robot_name):
-        # Create client object and other proxies, using helper functions in stage_utils
-        print "Robot name: %s" % (robot_name)
-        self.client = startup(("filler", robot_name), "run_temp.cfg")
-        self.pos, self.ran, self.gra = create_std(self.client)
-
-        # proxy for the local navigator
-        self.pla = playerc_planner(self.client, 0)
-        if self.pla.subscribe(PLAYERC_OPEN_MODE) != 0:
-            raise playerc_error_str()
-
-        self.client.read()
-
-    def state_die(self):
-        self.pos.unsubscribe()
-        self.ran.unsubscribe()
-        self.gra.unsubscribe()
-        self.pla.unsubscribe()
-        self.client.disconnect()
-
-    def state_start(self):
-        self.pla.enable(1)
 
     def state_go(self, command_send):
         idt = self.client.read()
@@ -75,6 +46,9 @@ class FollowerCont:
         STATE = "IDLE"
 
         while True:
+            # Check if a collision has happened
+            self.check_collision(pipe_in)
+
             # Check for state transitions from overlord
             if pipe_in.poll():
                 STATE = pipe_in.recv()
@@ -94,7 +68,7 @@ class FollowerCont:
                 self.state_reset()
                 STATE = "IDLE"
             elif STATE != "IDLE":
-                print "leader.py has received an improper state: %s" % (STATE)
+                print "follower.py has received an improper state: %s" % (STATE)
 
             # Check for new waypoints
             if command_receive.poll():
