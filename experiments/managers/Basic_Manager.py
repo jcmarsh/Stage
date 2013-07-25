@@ -69,7 +69,6 @@ class Basic_Manager:
             if self.robots[i].pipe_manager_end.poll():
                 MSG = self.robots[i].pipe_manager_end.recv()
                 if MSG == "COLLISION":
-                    print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAh. %d" % (i)
                     self.collision = True
 
     def check_collision(self):

@@ -108,6 +108,8 @@ class AStarCont(Basic_Controller.Basic_Controller):
                 STATE = "GO"
             elif STATE == "GO":
                 self.state_go()
+                # Check if a collision has happened
+                self.check_collision(pipe_in)
             elif STATE == "RESET":
                 self.state_reset()
                 STATE = "IDLE"
