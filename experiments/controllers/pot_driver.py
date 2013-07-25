@@ -13,22 +13,28 @@ from stage_utils import *
 class Pot(Basic_Controller.Basic_Controller):
     goal = None
     offset = None
+    prev_points = []
 
     def init(self, robot_name):
-        Basic_Controller.init(robot_name)
+        super(Pot, self).init(robot_name)
 
         target_loc = search_pose("run_temp.world", "target0")
         self.goal = Point(target_loc[0], target_loc[1])
         self.offset = Point(8,8)
 
+    def state_go(self):
+        idt = self.client.read()
+        self.pla.set_cmd_pose(self.goal.x, self.goal.y, 0)
+        self.prev_points.append(draw_all(self.gra, self.pos, self.offset, None, None, None, self.prev_points))
+
+    def state_reset(self):
+        self.prev_points = []
+        self.pla.enable(0)
+
     def run(self, pipe_in):
-        prev_points = []
         STATE = "IDLE"
 
         while(True):
-            # Check if a collision has happened
-            self.check_collision(pipe_in)
-
             if pipe_in.poll():
                 STATE = pipe_in.recv()
 
@@ -40,13 +46,11 @@ class Pot(Basic_Controller.Basic_Controller):
                 self.state_start()
                 STATE = "GO"
             elif STATE == "GO":
-                idt = self.client.read()
-
-                self.pla.set_cmd_pose(self.goal.x, self.goal.y, 0)
-                prev_points.append(draw_all(self.gra, self.pos, self.offset, None, None, None, prev_points))
+                self.state_go()
+                # Check if a collision has happened
+                self.check_collision(pipe_in)
             elif STATE == "RESET":
-                prev_points = []
-                self.pla.enable(0)
+                self.state_reset()
                 STATE = "IDLE"
             elif STATE != "IDLE":
                 print "pot_driver.py has recieved an improper state: %s" % (STATE)

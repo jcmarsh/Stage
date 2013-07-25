@@ -10,6 +10,8 @@ class Basic_Controller(object):
     ran = None # Range sensors (No noise)
     gra = None # Graphics layer
     pla = None # Local Navigator
+    
+    prev_no_collision = True
 
     def init(self, robot_name):
         # Create client object
@@ -34,6 +36,10 @@ class Basic_Controller(object):
         self.pla.enable(1)
 
     def check_collision(self, pipe):
-        if self.pos.stall:
+        # print "Stalled? %d" % (self.pos.stall)
+        if self.pos.stall and self.prev_no_collision:
+            self.prev_no_collision = False
             pipe.send("COLLISION")
+        elif not(self.pos.stall):
+            self.prev_no_collision = True
         
