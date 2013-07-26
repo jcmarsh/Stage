@@ -1,0 +1,50 @@
+# moving_wall.inc
+# It's a wall, that will move. Hopefully splitting a convoy.
+#
+# Author: James Marshall
+# Date: July 26 2013
+
+define moving_wall_sensor sensor
+(
+	size [0.01 0.1 0.2]
+	range [0 30.0]
+	fov 5
+	samples 1
+)
+
+define mvoing_wall_sonars ranger
+(
+	# Units are in meters from the origin, angles in degrees
+	moving_wall_sensor( pose [ 0 0 -0.1 0 ] )
+)
+
+
+define moving_wall position
+(
+	# Scaled to 1 unit = 4 cm
+	size [2.0 0.24 0.2]
+	# center of rotation offset
+	origin [0 0 0 0]
+
+	# Main body
+	block 
+	(
+		points 4
+		point[0] [0 0]
+		point[1] [25 0]
+		point[2] [25 6]
+		point[3] [0 6]
+		z [0 4]
+	)
+	
+	drive "omni"
+
+	localization "gps"	
+
+	gridcar_sonars()
+
+	obstacle_return 1	# can hit things
+	laser_return 1		# seen by lasers
+	ranger_return 1		# seen by sonar
+	blob_return 1 		# seen by blobfinders	
+)
