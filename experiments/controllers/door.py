@@ -27,7 +27,6 @@ class DoorCont(Basic_Controller.Basic_Controller):
 
             if dist < self.baseline_dist - self.baseline_epsilon:
                 self.crossed = True
-                print "Line crossed! Base: %f\tActual: %f" % (self.baseline_dist, dist)
         
             if dist > self.baseline_dist - self.baseline_epsilon and self.crossed:
                 self.shutting = True

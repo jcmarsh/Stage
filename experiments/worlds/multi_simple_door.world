@@ -53,6 +53,5 @@ door
 (
 	name "wall"
 	pose [-2.475 -.85 0 270]
-	localization_origin [0 0 0 0]
 	color "orange"
 )

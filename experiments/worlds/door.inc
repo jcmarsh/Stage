@@ -22,7 +22,7 @@ define door_sonars ranger
 define door position
 (
 	# Scaled to 1 unit = 4 cm
-	size [2.0 0.24 0.2]
+	size [2.0 0.24 0.16]
 	# center of rotation offset
 	origin [0 0 0 0]
 
@@ -38,8 +38,6 @@ define door position
 	)
 	
 	drive "omni"
-
-	localization "gps"	
 
 	door_sonars()
 
