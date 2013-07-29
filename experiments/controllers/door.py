@@ -35,6 +35,7 @@ class DoorCont(Basic_Controller.Basic_Controller):
             self.pla.set_cmd_pose(2, 0, 0) # This is almost surely wrong.... probably needs to be absolute...
 
     def state_reset(self):
+        self.pla.set_cmd_pose(0,0,0)
         self.pla.enable(0)
         self.baseline_dist = 0
         self.crossed = False

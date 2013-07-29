@@ -31,8 +31,8 @@ define door position
 	(
 		points 4
 		point[0] [0 0]
-		point[1] [25 0]
-		point[2] [25 6]
+		point[1] [50 0]
+		point[2] [50 6]
 		point[3] [0 6]
 		z [0 4]
 	)
