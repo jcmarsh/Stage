@@ -1,10 +1,10 @@
-# moving_wall.inc
+# door.inc
 # It's a wall, that will move. Hopefully splitting a convoy.
 #
 # Author: James Marshall
 # Date: July 26 2013
 
-define moving_wall_sensor sensor
+define door_sensor sensor
 (
 	size [0.01 0.1 0.2]
 	range [0 30.0]
@@ -12,14 +12,14 @@ define moving_wall_sensor sensor
 	samples 1
 )
 
-define mvoing_wall_sonars ranger
+define door_sonars ranger
 (
 	# Units are in meters from the origin, angles in degrees
-	moving_wall_sensor( pose [ 0 0 -0.1 0 ] )
+	door_sensor( pose [ 0 0 -0.1 0 ] )
 )
 
 
-define moving_wall position
+define door position
 (
 	# Scaled to 1 unit = 4 cm
 	size [2.0 0.24 0.2]
@@ -41,7 +41,7 @@ define moving_wall position
 
 	localization "gps"	
 
-	gridcar_sonars()
+	door_sonars()
 
 	obstacle_return 1	# can hit things
 	laser_return 1		# seen by lasers

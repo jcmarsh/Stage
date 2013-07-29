@@ -1,0 +1,58 @@
+# multi_simple_door.world
+#
+# Three cars and a door
+#
+# Author: James Marshall
+# Date: July 29 2013
+
+include "./worlds/gridcar.inc"
+include "./worlds/door.inc"
+include "./worlds/target.inc"
+include "./worlds/map.inc"
+include "./worlds/floor.inc"
+
+window
+(
+	size [ 900 900 ]
+	scale 40
+	
+	show_data 1
+)
+
+target
+(
+	name "target0"
+	pose [7 7 0 0]
+)
+
+gridcar
+(
+	name "hank"
+	pose [-6 -7 0 0]
+	localization_origin [0 0 0 0]
+	color "red"
+)
+
+gridcar
+(
+	name "frank"
+	pose [-6.5 -7 0 0]
+	localization_origin [0 0 0 0]
+	color "green"
+)
+
+gridcar
+(
+	name "samantha"
+	pose [-7 -7 0 0]
+	localization_origin [0 0 0 0]
+	color "blue"
+)
+
+door
+(
+	name "wall"
+	pose [-2.475 -.85 0 270]
+	localization_origin [0 0 0 0]
+	color "orange"
+)
