@@ -41,8 +41,8 @@ class Basic_Manager:
     def add_controller(self, controller_name, new_world_name, robot_name):
         controller_imp = __import__(controller_name)
         loc = search_pose(new_world_name, robot_name)
-        print "We've got a robot: %s\t%s - (%f,%f)" % (robot_name, controller_name, loc[0], loc[1])
-        self.robots.append(Robot(robot_name, controller_imp, loc[0], loc[1], 0)) # TODO: look into what controller_imp actually is.
+        print "We've got a robot: %s\t%s - (%f,%f:%f)" % (robot_name, controller_name, loc[0], loc[1], loc[2])
+        self.robots.append(Robot(robot_name, controller_imp, loc[0], loc[1], loc[2]))
 
     def open_controllers(self):
         for i in range(len(self.robots)):

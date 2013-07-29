@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import math
+
 # We need to be able to read the robot's initial pose and that of it's target.
 # Or rather, it would be very helpful for the simplier examples.
 
@@ -13,7 +15,8 @@ def search_pose(file_name, name):
                 args = ((line.partition("[")[2]).partition("]"))
                 args = args[0].strip(" ")
                 args = args.split(" ")
-                retVal = (float(args[0]), float(args[1]))
+                radian_alpha = (float(args[3]) / 360) * 2 * math.pi # .world uses degrees, everything else radians.
+                retVal = (float(args[0]), float(args[1]), radian_alpha) # args[2] should be z offset. Not used.
                 return retVal
         else:
             if name in line:
