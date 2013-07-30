@@ -42,7 +42,6 @@ except IOError:
 # TODO: Should check if this is an actual directory and fail if not. Or, you know, actually make the code sane.
 sys.path.append('/home/jcmarsh/Research/stage/experiments/managers')
 sys.path.append('/home/jcmarsh/Research/stage/experiments/controllers')
-sys.path.append('/home/jcmarsh/Research/stage/experiments/noises')
 
 config = ConfigParser.ConfigParser()
 config.readfp(open(experiment_desc)) # TODO: IOError here?

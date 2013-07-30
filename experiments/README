@@ -10,39 +10,35 @@ timer.py - For debugging. Gives a rough time for execution.
 
 algs: Two navigation algorithms, A* and artificial potential (not used, see art_pot_driver)
 
-art_pot_driver: A c implementation of the artificial potential local navigator. Built as a P/S driver.
-
 configs: Describe the setup of actors in the P/S world, things such as the drivers they use
 art_pot.cfg - A single robot using the art_pot_driver
 multi_comp.cfg - Three robots, each of which use the art_pot_driver
 single_comp.cfg - A single robot that uses the vfh driver for local navigation and wavefront for path.
+*_wn.cfg - Has the noise adapter added between the local navigator and the range sensor (laser actually)
+*_ac.cfg - Has the actuator noise adapter added between the local navigator and the robot (stage driver)
 
 controllers:
-################### NEEDS TO BE CLEANED UP AND UPDATED
-a_star.py
-follower.py
-pot_driver.py
-wave.py
-example.py
-leader.py
-wave_leader.py
+a_star.py - Impliments a simple A* algorithm
+Basic_Controller.py - Should be extended by all other controllers. Not standalone.
+door.py - Moves forward when something crosses infront of its single range sensor.
+follower.py - Accepts waypoints to move towards (using only local navigation), and also passes them on when reached.
+leader.py - Uses a_star.py to navigate, and passes waypoints on as it proceeds.
+pot_driver.py - Very simple, just manages a robot with the artificial potential navigator.
+
+drivers: P/S drivers
+actuation_noise_driver: Adds noise to position2d_cmd_vel messages that are sent to stage.
+art_pot_driver: A c implementation of the artificial potential local navigator.
+dumb_driver: Moves straight towards its goal while ignoring obstacles. Omni control only.
+ranger_noise_driver: Adds noise to an array of laser range finders.
 
 experiments: Descriptions and run scripts for many different experimental configurations
 ################### NEEDS TO BE CLEANED UP AND UPDATED
-a_star_test
-convoy_test
-debug_art_pot
-leader_test
-old
-pot_test
-uturn_convoy_test
+These change faily often, so I'm not going to attempt to keep them up to date right now.
 
 managers: Managers decide what robot runs which controller during the experiment
 (Initial controller assignments are described in the experiment description. The manager can change this, and is also responsible for coordinating communication between robots)
 Basic_Manager.py - Base class, the bare minimum. 
 Linked_Manager.py - Simple Leader / Follower, modeled on a linked list.
-
-noises: Future home of noise models and appropriate functions.
 
 stage_utils: Common useful functions.
 generic_start.py - Setup up the proxies provided by every robot: position, ranger, and graphics.
@@ -52,10 +48,12 @@ setup_util.py - Used by overlord.py to setup the temporary .world and .cfg files
 
 worlds: Represent the world in which the simulator is operating.
 worlds\bitmaps: bitmap representations of the space.
+door.inc - Describes and the omni drive robot that uses the dumb_driver and door.py controller to act as a gate.
 floor.inc - AUTOGEN! Sets the world bitmap to that described in the experiment description
 gridcar.inc - A simple differential drive robot encirlcled with range sensors.
 map.inc
 multi_simple.world - Three robots and a target.
+multi_simple_door.world - Three robots, a target, and a door. Crazy.
 single_comp.world - One robot and a target.
 target.inc - It is a green dot.
 
