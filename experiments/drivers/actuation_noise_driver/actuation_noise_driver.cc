@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include <libplayercore/playercore.h>
+#include "../noise.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // The class for the driver
@@ -283,20 +284,6 @@ void ActuationNoiseDriver::PutCommand(player_position2d_cmd_vel_t &data)
   PutCommand(data.vel.px, data.vel.pa);
 }
 
-double GetRandom(double scaler) {
-  double x;
-
-  x = rand() / (double)RAND_MAX;
-  // Convert to a number from -Pi to Pi
-  x = (x * 2 * M_PI) - M_PI;
-  // use f(x) = (1 + cos(x)) / 2Pi to approximate a normal distribution
-  // From www.johndcook.com, who source it from
-  // "A cosine approximation to the normal distribution” 
-  // by D. H. Raab and E. H. Green, Psychometrika, Volume 26, pages 447-450.
-  x = (1 + cos(x)) / (2 * M_PI);
-  return x * scaler;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Send commands to underlying position device
 void ActuationNoiseDriver::PutCommand(double cmd_speed, double cmd_turnrate)
@@ -309,9 +296,9 @@ void ActuationNoiseDriver::PutCommand(double cmd_speed, double cmd_turnrate)
     cmd.vel.py = 0;
     cmd.vel.pa = 0;
   } else {
-    cmd.vel.px = cmd_speed + GetRandom(this->noise_scale);
+    cmd.vel.px = cmd_speed + Noise_Get_Normalized(this->noise_scale);
     cmd.vel.py = 0;
-    cmd.vel.pa = cmd_turnrate + GetRandom(this->noise_scale / 2.0);
+    cmd.vel.pa = cmd_turnrate + Noise_Get_Normalized(this->noise_scale / 2.0);
   }
   
   this->odom->PutMsg(this->InQueue,

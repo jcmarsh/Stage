@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include <libplayercore/playercore.h>
+#include "../noise.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // The class for the driver
@@ -225,16 +226,7 @@ void RangerNoiseDriver::ProcessLaser(player_laser_data_t &data)
 
   laser_count = data.ranges_count;
   for (i = 0; i < data.ranges_count; i++) {
-    // Get a number between (inclusive) 0.0 and 1.0
-    x = rand() / (double)RAND_MAX;
-    // Convert to a number from -Pi to Pi
-    x = (x * 2 * M_PI) - M_PI;
-    // use f(x) = (1 + cos(x)) / 2Pi to approximate a normal distribution
-    // From www.johndcook.com, who source it from
-    // "A cosine approximation to the normal distribution” 
-    // by D. H. Raab and E. H. Green, Psychometrika, Volume 26, pages 447-450.
-    x = (1 + cos(x)) / (2 * M_PI);
-    x = x * this->noise_scale;
+    x = Noise_Get_Normalized(this->noise_scale);
 
     data.ranges[i] = x + data.ranges[i];
   }
