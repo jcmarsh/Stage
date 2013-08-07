@@ -8,4 +8,6 @@ define target model
 	bitmap "worlds/bitmaps/circle.png"
 	size [.1 .1 .1]
 	color "green"
+
+	obstacle_return 0
 ) 
