@@ -37,6 +37,8 @@ def getDistances(robots, sim):
 class Basic_Manager:
     robots = []
     collision = False
+
+    failure_model = False
     
     def add_controller(self, controller_name, new_world_name, robot_name):
         controller_imp = __import__(controller_name)
@@ -103,4 +105,20 @@ class Basic_Manager:
         return ret_str
 
     def update_stats(self, sim):
+        return
+
+    # Functions concerning different failure models
+    def add_failure_model(self, failure):
+        self.failure_model = failure
+
+    def consider_anarchy(self, elapsed_time):
+        if self.failure_model:
+            self.failure_model.consider_anarchy(self.robots, elapsed_time)
+        return
+
+    def add_failure_param(self, name, value):
+        if self.failure_model:
+            self.failure_model.add_param(name, value)
+        else:
+            print "ERROR: No failure model to add parameter to: %s - %s" % (name, value)
         return

@@ -95,6 +95,22 @@ for i in range(num_controllers):
     robot_name = config.get("controllers", "name" + str(i))
     manager.add_controller(controller_name, new_world_name, robot_name)
 
+
+try:
+    failure_name = config.get("failure", "manager")
+    if failure_name:
+        failure_imp = __import__(failure_name)
+        new_failure_function = getattr(failure_imp, failure_name)
+        failure_model = new_failure_function()
+
+        manager.add_failure_model(failure_model)
+        
+        failure_options = config.options("failure")
+        for i in range(len(failure_options)):
+            print "\tFailure: %s - %s" % (failure_options[i], config.get("failure", failure_options[i]))
+except ConfigParser.NoOptionError:
+    pass
+
 # Setup the overlord controller
 client = playerc_client(None, 'localhost', 6665)
 if client.connect() != 0:
@@ -149,6 +165,8 @@ for run_num in range(int(config.get("experiment", "runs"))):
         if manager.check_collision():
             finished = True
             print "COLLISION"
+            
+        manager.consider_anarchy(current_time - start_time)
 
     # Record results
     times.append((current_time - start_time) / time_scale)
