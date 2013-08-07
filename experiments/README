@@ -35,6 +35,9 @@ experiments: Descriptions and run scripts for many different experimental config
 ################### NEEDS TO BE CLEANED UP AND UPDATED
 These change faily often, so I'm not going to attempt to keep them up to date right now.
 
+failures: Contains basic failure models for the simulation.
+Standard_Failure.py - Resets one robot at random at a time defined in the .conf.
+
 managers: Managers decide what robot runs which controller during the experiment
 (Initial controller assignments are described in the experiment description. The manager can change this, and is also responsible for coordinating communication between robots)
 Basic_Manager.py - Base class, the bare minimum. 

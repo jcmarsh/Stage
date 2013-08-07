@@ -77,6 +77,10 @@ class Basic_Manager:
         return self.collision
 
     def reset_controllers(self, sim):
+        # Reset failure model
+        if self.failure_model:
+            self.failure_model.reset()
+        
         for i in range(len(self.robots)):
             self.robots[i].pipe_manager_end.send("RESET")
 

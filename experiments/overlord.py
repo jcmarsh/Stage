@@ -42,6 +42,7 @@ except IOError:
 # TODO: Should check if this is an actual directory and fail if not. Or, you know, actually make the code sane.
 sys.path.append('/home/jcmarsh/Research/stage/experiments/managers')
 sys.path.append('/home/jcmarsh/Research/stage/experiments/controllers')
+sys.path.append('/home/jcmarsh/Research/stage/experiments/failures')
 
 config = ConfigParser.ConfigParser()
 config.readfp(open(experiment_desc)) # TODO: IOError here?
@@ -107,7 +108,7 @@ try:
         
         failure_options = config.options("failure")
         for i in range(len(failure_options)):
-            print "\tFailure: %s - %s" % (failure_options[i], config.get("failure", failure_options[i]))
+            manager.add_failure_param(failure_options[i], config.get("failure", failure_options[i]))
 except ConfigParser.NoOptionError:
     pass
 
@@ -166,7 +167,7 @@ for run_num in range(int(config.get("experiment", "runs"))):
             finished = True
             print "COLLISION"
             
-        manager.consider_anarchy(current_time - start_time)
+        manager.consider_anarchy((current_time - start_time) / time_scale)
 
     # Record results
     times.append((current_time - start_time) / time_scale)
