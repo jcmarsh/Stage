@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# Demonstrates using the Artificial Potentail local navigator plugin. Pretty simple.
-# A good example of the different states that the planner is expected to handle.
+# Demonstrates using the Artificial Potential local navigator plugin. Pretty simple.
+# A good example of the different states that a controller is expected to handle.
 
 import math
 import sys

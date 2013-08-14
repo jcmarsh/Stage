@@ -1,0 +1,25 @@
+description {
+ * Expands the local navigator to provide 
+ * (1) manipulation of parameters (Perhaps better separated out as a separate interface... many have params)
+ * (2) emergency actions (Overriding all failsafes... may not be neccessary)
+ * (3) suppress certain obstacles, may be known cooperative agents.
+ *
+}
+
+/** Set a parameter */
+message { CMD, SET_PARAM, 1, player_smrtlninterf_param_cmd_t };
+/** Suppress a sensor reading */
+message { CMD, SUPPRESS_SENSOR, 2, player_smrtlninterf_supsensor_cmd_t };
+
+typedef struct player_smrtlninterf_param_cmd
+{
+	int param_index;
+	double param_value;
+} player_smrtlninterf_param_cmd_t;
+
+typedef struct player_smrtlninterf_supsensor_cmd
+{
+	int sensor_index;
+	int state; /* 0 is off, 1 is on */
+} player_smrtlninterf_supsensor_cmd_t;
+
