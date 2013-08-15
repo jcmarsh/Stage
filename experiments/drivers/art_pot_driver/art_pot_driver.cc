@@ -11,6 +11,8 @@
 
 #include <libplayercore/playercore.h>
 
+#include "smrtln_interface.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 // The class for the driver
 class ArtPotDriver : public ThreadedDriver
@@ -54,6 +56,8 @@ private:
   void ProcessCommand(player_msghdr_t* hdr, player_position2d_cmd_pos_t &);
 
   // Devices provided
+  player_devaddr_t smrtln_id;
+  bool smart;
   player_devaddr_t position_id;
   player_devaddr_t planner_id;
   bool planner;
@@ -111,6 +115,17 @@ void ArtPotDriver_Register(DriverTable* table)
 ArtPotDriver::ArtPotDriver(ConfigFile* cf, int section)
   : ThreadedDriver(cf, section)
 {
+  // Check for smart local navigator (we provide)
+  memset(&(this->smrtln_id), 0, sizeof(player_devaddr_t));
+  if (cf->ReadDeviceAddr(&(this->smrtln_id), section, "provides",
+			 PLAYER_SMRTLN_CODE, -1, NULL) == 0) {
+    smart = true;
+    if (this->AddInterface(this->smrtln_id) != 0) {
+      this->SetError(-1);
+      return;
+    }
+  }
+
   // Check for planner (we provide)
   memset(&(this->planner_id), 0, sizeof(player_devaddr_t));
   memset(&(this->planner_data), 0, sizeof(player_planner_data_t));
@@ -121,8 +136,7 @@ ArtPotDriver::ArtPotDriver(ConfigFile* cf, int section)
       this->SetError(-1);
       return;
     }
-    // Init planner data
-
+    // Init planner data ?
   }
   
   // Check for position2d (we provide)
@@ -259,7 +273,7 @@ int ArtPotDriver::ProcessMessage(QueuePointer & resp_queue,
     this->Publish(this->planner_id, resp_queue, 
 		  PLAYER_MSGTYPE_RESP_ACK, PLAYER_PLANNER_REQ_ENABLE);
     return 0;				   
-  } else if(Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ, -1, this->position_id)) {
+  } else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ, -1, this->position_id)) {
     // Pass the request on to the underlying position device and wait for
     // the reply.
     Message* msg;
@@ -282,6 +296,12 @@ int ArtPotDriver::ProcessMessage(QueuePointer & resp_queue,
     this->Publish(resp_queue, rephdr, repdata);
     delete msg;
     return(0);
+  } else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD, PLAYER_SMRTLN_CMD_SET_PARAM, device_addr)) {
+    printf ("SmrtLNInterfDriver: Received PARAM command: %d-%f\n", reinterpret_cast<player_smrtlninterf_param_cmd*> (data)->param_index, reinterpret_cast<player_smrtlninterf_param_cmd_t*> (data)->param_value);
+    return 0;
+  } else if (Message::MatchMessage (hdr, PLAYER_MSGTYPE_CMD, PLAYER_SMRTLN_CMD_SUPPRESS_SENSOR, device_addr)) {
+    printf ("SmrtLNInterfDriver: Received SENSOR command: %d-%d\n", reinterpret_cast<player_smrtlninterf_supsensor_cmd_t*> (data)->sensor_index, reinterpret_cast<player_smrtlninterf_supsensor_cmd_t*> (data)->state);
+    return 0;
   } else {
     return -1;
   }

@@ -5,6 +5,10 @@ PROJECT (art_pot_driver)
 SET (CMAKE_MODULE_PATH "/usr/local/share/cmake/Modules")
 INCLUDE (UsePlayerPlugin)
 
+include_directories(../smrtln_interf/build)
+
+PLAYER_ADD_PLUGIN_INTERFACE (smrtln ../smrtln_interf/100_smrtln.def SOURCES ../smrtln_interf/smrtlninterf_client.c)
+
 PLAYER_ADD_PLUGIN_DRIVER (art_pot_driver SOURCES art_pot_driver.cc)
 
 INSTALL(FILES ./build/libart_pot_driver.so
