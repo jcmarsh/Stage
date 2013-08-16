@@ -4,6 +4,8 @@ config.h
 *~
 *#
 *.pyc
+*.ini
+run_set.sh
 .DS_Store
 docsrc/stage
 experiments/worlds/floor.inc
