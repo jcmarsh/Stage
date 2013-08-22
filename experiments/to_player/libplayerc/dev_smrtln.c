@@ -41,64 +41,61 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string.h>
 #include <stdlib.h>
-#include <libplayerc/playerc.h>
-#include <libplayercommon/playercommon.h>
 
-#include "smrtln_interface.h"
-#include "smrtln_xdr.h"
-#include "smrtlninterf_client.h"
+#include "playerc.h"
 
-void smrtlninterf_putmsg (smrtlninterf_t *device, player_msghdr_t *header, uint8_t *data, size_t len);
+void playerc_smrtln_putmsg(playerc_smrtln_t *device,
+			   player_msghdr_t *header,
+			   uint8_t *data, size_t len); // TODO: check data
 
-smrtlninterf_t *smrtlninterf_create (playerc_client_t *client, int index)
+playerc_smrtln_t *playerc_smrtln_create(playerc_client_t *client, int index)
 {
-	smrtlninterf_t *device;
+  playerc_smrtln_t *device;
 
-	device = (smrtlninterf_t*) malloc (sizeof (smrtlninterf_t));
-	memset (device, 0, sizeof (smrtlninterf_t));
-	playerc_device_init (&device->info, client, PLAYER_SMRTLN_CODE, index, (playerc_putmsg_fn_t) smrtlninterf_putmsg);
-
-	return device;
+  device = malloc(sizeof(playerc_smrtln_t));
+  memset(device, 0, sizeof(playerc_smrtln_t));
+  playerc_device_init(&device->info, client, PLAYER_SMRTLN_CODE, index, 
+		       (playerc_putmsg_fn_t) playerc_smrtln_putmsg);
+  return device;
 }
 
-void smrtlninterf_destroy (smrtlninterf_t *device)
+void playerc_smrtln_destroy(playerc_smrtln_t *device)
 {
-	playerc_device_term (&device->info);
-
-	free (device);
+  playerc_device_term(&device->info);
+  free(device);
 }
 
-int smrtlninterf_subscribe (smrtlninterf_t *device, int access)
+int playerc_smrtln_subscribe(playerc_smrtln_t *device, int access)
 {
-	return playerc_device_subscribe (&device->info, access);
+  return playerc_device_subscribe(&device->info, access);
 }
 
-int smrtlninterf_unsubscribe (smrtlninterf_t *device)
+int playerc_smrtln_unsubscribe(playerc_smrtln_t *device)
 {
-	return playerc_device_unsubscribe (&device->info);
+  return playerc_device_unsubscribe(&device->info);
 }
 
-void smrtlninterf_putmsg (smrtlninterf_t *device, player_msghdr_t *header, uint8_t *data, size_t len)
+void playerc_smrtln_putmsg(playerc_smrtln_t *device, player_msghdr_t *header, uint8_t *data, size_t len)
 {
-  printf ("skipping smrtlninterf message with unknown type/subtype: %s/%d\n", msgtype_to_str(header->type), header->subtype);
+  printf("skipping playerc_smrtln message with unknown type/subtype: %s/%d\n", msgtype_to_str(header->type), header->subtype);
 }
 
-int smrtlninterf_set_param (smrtlninterf_t *device, int index, double value)
+int playerc_smrtln_set_param(playerc_smrtln_t *device, int index, double value)
 {
-	player_smrtlninterf_param_cmd_t cmd;
-	memset (&cmd, 0, sizeof (player_smrtlninterf_param_cmd_t));
-	cmd.param_index = index;
-	cmd.param_value = value;
+  player_smrtln_param_cmd_t cmd;
+  memset(&cmd, 0, sizeof(player_smrtln_param_cmd_t));
+  cmd.param_index = index;
+  cmd.param_value = value;
 
-	return playerc_client_write (device->info.client, &device->info, PLAYER_SMRTLN_CMD_SET_PARAM, &cmd, NULL);
+  return playerc_client_write(device->info.client, &device->info, PLAYER_SMRTLN_CMD_SET_PARAM, &cmd, NULL);
 }
 
-int smrtlninterf_sup_sensor (smrtlninterf_t *device, int index, int state)
+int playerc_smrtln_sup_sensor(playerc_smrtln_t *device, int index, int state)
 {
-	player_smrtlninterf_supsensor_cmd_t cmd;
-	memset (&cmd, 0, sizeof (player_smrtlninterf_supsensor_cmd_t));
-	cmd.sensor_index = index;
-	cmd.state = state;
+  player_smrtln_supsensor_cmd_t cmd;
+  memset(&cmd, 0, sizeof (player_smrtln_supsensor_cmd_t));
+  cmd.sensor_index = index;
+  cmd.state = state;
 
-	return playerc_client_write (device->info.client, &device->info, PLAYER_SMRTLN_CMD_SUPPRESS_SENSOR, &cmd, NULL);
+  return playerc_client_write(device->info.client, &device->info, PLAYER_SMRTLN_CMD_SUPPRESS_SENSOR, &cmd, NULL);
 }

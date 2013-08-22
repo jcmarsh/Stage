@@ -1,0 +1,9 @@
+M       libplayerinterface/CMakeLists.txt
+M       libplayerinterface/interfaces/031_simulation.def
+A       libplayerinterface/interfaces/068_pathplanner.def
+A       libplayerinterface/interfaces/067_smrtln.def
+A       client_libs/libplayerc/dev_smrtln.c
+M       client_libs/libplayerc/playerc.h
+M       client_libs/libplayerc/dev_simulation.c
+M       client_libs/libplayerc/CMakeLists.txt
+A       client_libs/libplayerc/dev_pathplanner.c

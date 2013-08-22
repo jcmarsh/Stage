@@ -49,6 +49,8 @@ graph_util.py - Deals with drawing things to the graphics layer (grid lines, pat
 parse_world.py - Functions to parse the .world file
 setup_util.py - Used by overlord.py to setup the temporary .world and .cfg files.
 
+to_player: These files should be copied over to player. Compile... install..
+
 worlds: Represent the world in which the simulator is operating.
 worlds\bitmaps: bitmap representations of the space.
 door.inc - Describes and the omni drive robot that uses the dumb_driver and door.py controller to act as a gate.

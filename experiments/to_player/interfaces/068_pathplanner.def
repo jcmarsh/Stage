@@ -1,0 +1,23 @@
+description {
+ * Expands the path planner to give some experimental functionality, possibly:
+ * (1) Receive messages from the LN that execution of waypoint has failed
+ * (2) Receive messages pertaining to actuation failures
+ * (3) Surely there is a third thing...
+ *
+}
+
+/** Set a parameter */
+message { CMD, TEST_ONE, 1, player_pathplanner_test_one_cmd_t };
+/** Suppress a sensor reading */
+message { CMD, TEST_TWO, 2, player_pathplanner_test_two_cmd_t };
+
+typedef struct player_pathplanner_test_one_cmd
+{
+	int value;
+} player_pathplanner_test_one_cmd_t;
+
+typedef struct player_pathplanner_test_two_cmd
+{
+	int value;
+} player_pathplanner_test_two_cmd_t;
+

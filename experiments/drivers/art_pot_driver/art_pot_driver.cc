@@ -11,8 +11,6 @@
 
 #include <libplayercore/playercore.h>
 
-#include "smrtln_interface.h"
-
 ////////////////////////////////////////////////////////////////////////////////
 // The class for the driver
 class ArtPotDriver : public ThreadedDriver
@@ -297,10 +295,10 @@ int ArtPotDriver::ProcessMessage(QueuePointer & resp_queue,
     delete msg;
     return(0);
   } else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD, PLAYER_SMRTLN_CMD_SET_PARAM, device_addr)) {
-    printf ("SmrtLNInterfDriver: Received PARAM command: %d-%f\n", reinterpret_cast<player_smrtlninterf_param_cmd*> (data)->param_index, reinterpret_cast<player_smrtlninterf_param_cmd_t*> (data)->param_value);
+    printf ("SmrtLNDriver: Received PARAM command: %d-%f\n", reinterpret_cast<player_smrtln_param_cmd*> (data)->param_index, reinterpret_cast<player_smrtln_param_cmd_t*> (data)->param_value);
     return 0;
   } else if (Message::MatchMessage (hdr, PLAYER_MSGTYPE_CMD, PLAYER_SMRTLN_CMD_SUPPRESS_SENSOR, device_addr)) {
-    printf ("SmrtLNInterfDriver: Received SENSOR command: %d-%d\n", reinterpret_cast<player_smrtlninterf_supsensor_cmd_t*> (data)->sensor_index, reinterpret_cast<player_smrtlninterf_supsensor_cmd_t*> (data)->state);
+    printf ("SmrtLNDriver: Received SENSOR command: %d-%d\n", reinterpret_cast<player_smrtln_supsensor_cmd_t*> (data)->sensor_index, reinterpret_cast<player_smrtln_supsensor_cmd_t*> (data)->state);
     return 0;
   } else {
     return -1;

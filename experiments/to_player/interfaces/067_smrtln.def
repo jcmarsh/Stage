@@ -7,19 +7,19 @@ description {
 }
 
 /** Set a parameter */
-message { CMD, SET_PARAM, 1, player_smrtlninterf_param_cmd_t };
+message { CMD, SET_PARAM, 1, player_smrtln_param_cmd_t };
 /** Suppress a sensor reading */
-message { CMD, SUPPRESS_SENSOR, 2, player_smrtlninterf_supsensor_cmd_t };
+message { CMD, SUPPRESS_SENSOR, 2, player_smrtln_supsensor_cmd_t };
 
-typedef struct player_smrtlninterf_param_cmd
+typedef struct player_smrtln_param_cmd
 {
 	int param_index;
 	double param_value;
-} player_smrtlninterf_param_cmd_t;
+} player_smrtln_param_cmd_t;
 
-typedef struct player_smrtlninterf_supsensor_cmd
+typedef struct player_smrtln_supsensor_cmd
 {
 	int sensor_index;
 	int state; /* 0 is off, 1 is on */
-} player_smrtlninterf_supsensor_cmd_t;
+} player_smrtln_supsensor_cmd_t;
 
