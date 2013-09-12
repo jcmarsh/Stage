@@ -47,7 +47,8 @@ SET (interfaceFiles interfaces/001_player.def
                     interfaces/064_blackboard.def
                     interfaces/065_stereo.def
 		    interfaces/067_smrtln.def
-		    interfaces/068_pathplanner.def)
+		    interfaces/068_pathplanner.def
+		    interfaces/069_time.def)
 
 INCLUDE (${PLAYER_CMAKE_DIR}/internal/ProcessInterfaces.cmake)
 

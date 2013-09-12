@@ -55,6 +55,7 @@ SET (playercSrcs    playerc.h
                     dev_speech.c
                     dev_speech_recognition.c
                     dev_stereo.c
+		    dev_time.c
                     dev_vectormap.c
                     dev_wifi.c
                     dev_wsn.c)

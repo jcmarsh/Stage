@@ -1,0 +1,13 @@
+description {
+ * Here to benchmark how long it takes a message to go from one device to another.
+}
+
+/** Send a time measurment */
+message { DATA, TIME, 1, player_time_data_t };
+
+typedef struct player_time_data
+{
+	long time;
+} player_time_data_t;
+
+
