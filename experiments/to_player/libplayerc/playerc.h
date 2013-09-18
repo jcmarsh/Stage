@@ -1808,7 +1808,7 @@ typedef struct
   /** Device info; must be at the start of all device structures. */
   playerc_device_t info;
 
-  long time;
+  unsigned long time;
 } playerc_time_t;
 
 
@@ -1818,11 +1818,13 @@ PLAYERC_EXPORT playerc_time_t *playerc_time_create(playerc_client_t *client, int
 /** @brief Destroy a time proxy. */
 PLAYERC_EXPORT void playerc_time_destroy(playerc_time_t *device);
 
-/** @brief Subscribe to the gps device. */
+/** @brief Subscribe to the time device. */
 PLAYERC_EXPORT int playerc_time_subscribe(playerc_time_t *device, int access);
 
 /** @brief Un-subscribe from the time device. */
 PLAYERC_EXPORT int playerc_time_unsubscribe(playerc_time_t *device);
+
+PLAYERC_EXPORT int playerc_time_get_time(playerc_time_t *device);
 
 
 /** @} */

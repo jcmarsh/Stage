@@ -91,21 +91,28 @@ int playerc_time_unsubscribe(playerc_time_t *device)
   return playerc_device_unsubscribe(&device->info);
 }
 
+// Get the current time (in cycles)
+int playerc_time_get_time(playerc_time_t *device)
+{
+  player_time_time_req_t *request;
+
+  if(playerc_client_request(device->info.client,
+			    &device->info,
+			    PLAYER_TIME_REQ_GET_TIME,
+			    NULL, (void**)&request) < 0)
+    return -1;
+
+  device->time = request->time;
+  return 0;
+}
 
 // Process incoming data
 void playerc_time_putmsg(playerc_time_t *device,
                                player_msghdr_t *header,
                                void *data, size_t len)
 {
-  if((header->type == PLAYER_MSGTYPE_DATA) &&
-     (header->subtype == PLAYER_TIME_DATA_TIME))
-  {
-    player_time_data_t * time_data = (player_time_data_t *) data;
-    device->time = time_data->time;
-  }
-  else
-    PLAYERC_WARN2("skipping time message with unknown type/subtype: %s/%d\n",
-                 msgtype_to_str(header->type), header->subtype);
+  PLAYERC_WARN2("skipping time message with unknown type/subtype: %s/%d\n",
+		msgtype_to_str(header->type), header->subtype);
   return;
 }
 
