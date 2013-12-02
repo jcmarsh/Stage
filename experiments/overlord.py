@@ -40,9 +40,9 @@ except IOError:
 
 # TODO: This is a horrible hack. I want the manager files in a sub-dir, but need to import them
 # TODO: Should check if this is an actual directory and fail if not. Or, you know, actually make the code sane.
-sys.path.append('/home/jcmarsh/Research/stage/experiments/managers')
-sys.path.append('/home/jcmarsh/Research/stage/experiments/controllers')
-sys.path.append('/home/jcmarsh/Research/stage/experiments/failures')
+sys.path.append('/home/jcmarsh/research/stage/experiments/managers')
+sys.path.append('/home/jcmarsh/research/stage/experiments/controllers')
+sys.path.append('/home/jcmarsh/research/stage/experiments/failures')
 
 config = ConfigParser.ConfigParser()
 config.readfp(open(experiment_desc)) # TODO: IOError here?
