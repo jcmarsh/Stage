@@ -74,7 +74,7 @@ typedef struct player_simulation_pose2d_req
 
 typedef struct player_simulation_time_req
 {
-	int64_t frank;
+	uint64_t frank;
 } player_simulation_time_req_t;
 
 /** @brief Request/reply: get/set 3D pose of a named simulation object
