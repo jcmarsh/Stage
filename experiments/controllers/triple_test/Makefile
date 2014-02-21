@@ -12,4 +12,4 @@ triple_dietlibc:
 	diet gcc -nostdinc $(INC_DIET) -o triple triple.c $(SPLAYERC)/libplayerc.a $(LIBCDIR)/dietlibc.a $(LIBCDIR)/librpc.a $(LIBCDIR)/libm.a
 
 clean:
-	rm -f basic
+	rm -f triple

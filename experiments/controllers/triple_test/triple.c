@@ -15,6 +15,9 @@
 // From http://www.thegeekstuff.com/2012/05/c-fork-function/
 // from: http://playerstage.sourceforge.net/doc/Player-svn/player/group__libplayerc__example.html
 
+//#define HOST "192.168.23.201"
+#define HOST "127.0.0.1"
+
 void child_loop(int whoAmI) {
   printf("It is I, child %d\n", whoAmI);
 }
@@ -34,7 +37,7 @@ int main(int argc, const char **argv) {
 
 
   // Create client and connect
-  client = playerc_client_create(0, "192.168.23.201", 6666); // I start at 6666
+  client = playerc_client_create(0, HOST, 6666); // I start at 6666
   if (0 != playerc_client_connect(client)) {
     return -1;
   }
