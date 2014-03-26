@@ -7,8 +7,13 @@ int main(int argc, const char **argv) {
   playerc_client_t *client;
   playerc_position2d_t *position2d;
 
+  if (argc < 2) {
+    puts("Usage: basic <ip_address>");
+    return 0;
+  }
+
   // Create client and connect
-  client = playerc_client_create(0, "192.168.23.201", 6666); // I start at 6666
+  client = playerc_client_create(0, argv[1], 6666); // I start at 6666
   if (0 != playerc_client_connect(client)) {
     return -1;
   }
