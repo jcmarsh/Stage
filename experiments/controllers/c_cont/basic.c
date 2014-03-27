@@ -29,7 +29,8 @@ int main(int argc, const char **argv) {
 
   // Make robot move
   //  playerc_position2d_enable(position2d, 1);
-  playerc_position2d_set_cmd_vel(position2d, 0.3, 0.2, 0.1, 1);
+  //  playerc_position2d_set_cmd_vel(position2d, 0.3, 0.2, 0.1, 1);
+  playerc_position2d_set_cmd_pose(position2d, 7.0, 7.0, 0.0, 1);
 
   while(1) {
     // blah
