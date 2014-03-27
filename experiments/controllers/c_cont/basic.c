@@ -1,4 +1,7 @@
-//#include <stdio.h> // shit
+/*
+ * Connects to a position2d device (number 1) at the specified IP.
+ */
+
 #include <libplayerc/playerc.h>
 
 // from: http://playerstage.sourceforge.net/doc/Player-svn/player/group__libplayerc__example.html
@@ -19,7 +22,7 @@ int main(int argc, const char **argv) {
   }
 
   // Create and subscribe to position2d device
-  position2d = playerc_position2d_create(client, 0);
+  position2d = playerc_position2d_create(client, 1);
   if (playerc_position2d_subscribe(position2d, PLAYER_OPEN_MODE)) {
     return -1;
   }
