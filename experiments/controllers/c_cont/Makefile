@@ -14,7 +14,9 @@ diet:
 regular:
 	gcc $(R_INC) -o basic basic.c -lplayerc
 	gcc $(R_INC) -o planner_cmd planner_cmd.c -lplayerc
+	gcc $(R_INC) -o redundant_test redundant_test.c -lplayerc
 
 clean:
 	rm -f basic
 	rm -f planner_cmd
+	rm -f redundant_test
