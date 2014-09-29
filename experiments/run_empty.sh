@@ -1,23 +1,10 @@
 #!/bin/bash
 
-# MAKE SURE THAT THE BENCHMARKER IS SET TO RUN EMPTY CONTROLLER
+# Make sure the benchmarker is set run the correct controller
 
-timeout 120s player baseline.cfg > vote_run0.txt &
-sleep 3
-timeout 125s ./controllers/c_cont/basic 127.0.0.1
-
-timeout 120s player baseline.cfg > vote_run1.txt &
-sleep 3
-timeout 125s ./controllers/c_cont/basic 127.0.0.1
-
-timeout 120s player baseline.cfg > vote_run2.txt &
-sleep 3
-timeout 125s ./controllers/c_cont/basic 127.0.0.1
-
-timeout 120s player baseline.cfg > vote_run3.txt &
-sleep 3
-timeout 125s ./controllers/c_cont/basic 127.0.0.1
-
-timeout 120s player baseline.cfg > vote_run4.txt &
-sleep 3
-timeout 125s ./controllers/c_cont/basic 127.0.0.1
+for index in `seq 0 9`; do
+	timeout 140s player baseline.cfg > $1_$index.txt &
+	sleep 5
+	timeout 130s ./controllers/c_cont/basic 127.0.0.1
+	sleep 10
+done
