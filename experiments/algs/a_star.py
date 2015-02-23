@@ -76,7 +76,7 @@ class a_star_planner:
                     if not i == j == 0: # 8 neighbors
                         if i == j or i == -j:
                             # Diagonal neighbor. Make sure way is blocked on either side.
-                            if not self.obstacles[n.x + i][n.y] or not self.obstacles[n.x][n.y + j]:
+                            if not self.obstacles[n.x + i][n.y] or not self.obstacles[n.x][n.y + j]: # this looks wrong. What about i = 1 and j = 1?
                                 new_node = node(n.x + i, n.y + j, n.g_score + 1.414) # units the number of grid spaces
                                 if not self.obstacles[n.x + i][n.y + j]:
                                     neighbors.append(new_node)
@@ -116,12 +116,12 @@ class a_star_planner:
             closed_set.append(c_node)
 
             for n in self._gen_neighbors(c_node):
-                tent_g_score = c_node.g_score + self._est_dist(n, c_node)
+                tent_g_score = c_node.g_score + self._est_dist(n, c_node) # huh? looks like f score
                 try:
                     index = closed_set.index(n) # in closed set
                     if tent_g_score >= n.g_score:
                         continue
-                    else:
+                    else: # Can this ever happen?
                         closed_set[index].g_score = tent_g_score
                         closed_set[index].back_link = c_node
                         continue

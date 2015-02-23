@@ -9,26 +9,48 @@ import Basic_Controller
 from playerc import *
 from stage_utils import *
 
-class Pot(Basic_Controller.Basic_Controller):
+class Time():
+    client = None
+    pos = None
+    ran = None
+    gra = None
+
+    tim = None
+
     goal = None
     offset = None
-    prev_points = []
 
     def init(self, robot_name):
-        super(Pot, self).init(robot_name)
+        # Create client object
+        self.client = startup(("filler", robot_name), "run_temp.cfg")
+        self.pos, self.ran, self.gra = create_std(self.client)
 
-        target_loc = search_pose("run_temp.world", "target0")
-        self.goal = Point(target_loc[0], target_loc[1])
+        self.tim = playerc_time(self.client, 0)
+        if self.tim.subscribe(PLAYERC_OPEN_MODE) != 0:
+            raise playerc_error_str()
+
+        self.client.read()        
+
         self.offset = Point(8,8)
+
+    def state_die(self):
+        self.pos.unsubscribe()
+        self.ran.unsubscribe()
+        self.gra.unsubscribe()
+        self.client.disconnect()
+
+    def state_start(self):
+        pass
+
+    def check_collision(self, pipe):
+        pass
 
     def state_go(self):
         idt = self.client.read()
-        self.pla.set_cmd_pose(self.goal.x, self.goal.y, 0)
-        self.prev_points.append(draw_all(self.gra, self.pos, self.offset, None, None, None, self.prev_points))
+        self.tim.get_time()
 
     def state_reset(self):
-        self.prev_points = []
-        self.pla.enable(0)
+        pass
 
     def run(self, pipe_in):
         STATE = "IDLE"
@@ -52,12 +74,12 @@ class Pot(Basic_Controller.Basic_Controller):
                 self.state_reset()
                 STATE = "IDLE"
             elif STATE != "IDLE":
-                print "pot_driver.py has recieved an improper state: %s" % (STATE)
+                print "time_driver.py has recieved an improper state: %s" % (STATE)
 
         print("DONE!")
 
 def go(robot_name, pipe_in):
-    controller = Pot()
+    controller = Time()
     controller.init(robot_name)
     controller.run(pipe_in)
 

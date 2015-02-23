@@ -8,6 +8,12 @@
 
 #include <libplayercore/playercore.h>
 
+#define rdtscll(value)                                 \
+  __asm__ ("rdtsc\n\t"                                 \
+           "shl $(32), %%rdx\n\t"                      \
+           "or %%rax, %%rdx" : "=d" (value) : : "rax")
+
+
 //////////////////////////////////////////////////////////////////////////////
 // The class for the driver
 class TimeDriver : public ThreadedDriver
@@ -100,15 +106,26 @@ void TimeDriver::MainQuit()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Incoming Message!
-int TimeDriver::ProcessMessage(QueuePointer & resq_queue,
+int TimeDriver::ProcessMessage(QueuePointer & resp_queue,
 			       player_msghdr * hdr,
 			       void * data)
 {
+  unsigned long t;
   if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ,
 			    PLAYER_TIME_REQ_GET_TIME,
 			    this->time_id)) {
-    //player_time_req_time_t *req_time = (player_time_req_time *) data;
+
+    player_time_time_req_t req_time;
+    rdtscll(t);
+    req_time.time = t;
+
     printf("TIME HAS BEEN REQUESTED!!!!\n");
+
+    this->Publish(this->time_id, resp_queue,
+		  PLAYER_MSGTYPE_RESP_ACK,
+		  PLAYER_TIME_REQ_GET_TIME,
+		  (void*)&req_time, sizeof(req_time), NULL);
+    return 0;
   }
 }
 
