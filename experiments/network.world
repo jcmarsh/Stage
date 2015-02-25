@@ -8,11 +8,13 @@ include "./worlds/target.inc"
 include "./worlds/map.inc"
 include "./worlds/floor.inc"
 
+interval_sim  5
+
 window
 (
 	size [ 900 900 ]
 	scale 40
-	
+
 	show_data 1
 )
 

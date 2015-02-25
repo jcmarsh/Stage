@@ -221,7 +221,7 @@ Interface::Interface(  player_devaddr_t addr,
   this->last_publish_time = 0;
   this->addr = addr;
   this->driver = driver;
-  this->publish_interval_msec = 100; // todo - do this properly
+  this->publish_interval_msec = 10; // todo - do this properly // JAMES edited, was 100
 }
 
 InterfaceModel::InterfaceModel(  player_devaddr_t addr,
@@ -249,8 +249,9 @@ InterfaceModel::InterfaceModel(  player_devaddr_t addr,
 				   type );
 
   // Use same update interval as the model
-  this->publish_interval_msec = this->mod->GetUpdateInterval()/1000;
-    
+  this->publish_interval_msec = 5; //this->mod->GetUpdateInterval()/1000; // JAMES hacks.
+  //printf("Setting publish interval msec to : %f\n", this->publish_interval_msec);
+
   if( !this->mod )
     {
       printf( " ERROR! no model available for this device."
