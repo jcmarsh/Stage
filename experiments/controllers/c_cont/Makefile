@@ -13,8 +13,10 @@ diet:
 
 regular:
 	gcc $(R_INC) -o basic basic.c -lplayerc
+	gcc $(R_INC) -o logger logger.c -lplayerc
 	gcc $(R_INC) -o planner_cmd planner_cmd.c -lplayerc
 
 clean:
 	rm -f basic
+	rm -f logger
 	rm -f planner_cmd
