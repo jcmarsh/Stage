@@ -163,33 +163,6 @@ int InterfaceSimulation::ProcessMessage(QueuePointer &resp_queue,
 		}
 	}
 
-	// Time, added by jcm
-	if(Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ, PLAYER_SIMULATION_REQ_GET_TIME, addr)) {    
-	  player_simulation_time_req_t* req = (player_simulation_time_req_t*)data;
-
-	  // This seems pretty horrible. Experiment MUST have a robot named "hank" -jcm
-	  Model* mod = StgDriver::world->GetModel("hank");
-				
-	  if( mod ) {
-	    //make a new structure and copy req into it
-	    player_simulation_time_req_t reply;
-	    memcpy( &reply, req, sizeof(reply));
-	      
-	    // and copy the time data
-	    reply.frank = mod->GetWorld()->SimTimeNow();
-
-	    this->driver->Publish( this->addr, resp_queue,
-				   PLAYER_MSGTYPE_RESP_ACK,
-				   PLAYER_SIMULATION_REQ_GET_TIME,
-				   (void*)&reply, sizeof(reply), NULL);
-	    return(0);
-	  } else {
-	    printf("File: %s:%d\t Failed to retrieve model. Do you have one named hank?\n", __FILE__, __LINE__);
-	  }
-	}
-	  
-	  
-       
 	// Is it a request to get a model's pose in 2D?
 	if(Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ,
 			PLAYER_SIMULATION_REQ_GET_POSE2D,
