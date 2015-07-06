@@ -1,0 +1,3 @@
+http://crazyyetwise.com/2013/10/page/2/ - 126.jpg - takes about 4.3 seconds to find 23 pedestrians.
+
+http://www.cs.cmu.edu/~jkh/uobio/hong_kong/ - street_scene_web.jpg  - takes about 1.4 seconds to find 12 pedestrians.
